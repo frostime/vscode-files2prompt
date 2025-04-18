@@ -1,10 +1,21 @@
+/*
+ * Copyright (c) 2025 by frostime. All Rights Reserved.
+ * @Author       : frostime
+ * @Date         : 2025-04-18 15:05:28
+ * @FilePath     : /src/extension.ts
+ * @LastEditTime : 2025-04-18 16:02:13
+ * @Description  : 
+ */
 import * as vscode from 'vscode';
+import * as path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
-	// 注册命令
+    // 读取配置
+    const config = vscode.workspace.getConfiguration('filesToPrompt');
+    const fileTemplate = config.get<string>('fileTemplate', '```{{FilePath}}\n{{Content}}\n```');
+    // 注册命令
 	let disposable = vscode.commands.registerCommand('files-to-prompt.openedFiles', async () => {
 		try {
-
 			// 获取所有打开的文档（包括所有标签页）
 			const openDocuments = vscode.workspace.textDocuments;
 
@@ -23,6 +34,8 @@ export function activate(context: vscode.ExtensionContext) {
 
 				const filePath = document.uri.fsPath;
 				const content = document.getText();
+                const fileName = path.basename(filePath);
+                const fileExt = path.extname(filePath).substring(1);
 
 				// 获取相对路径
 				let relativePath = filePath;
@@ -33,11 +46,14 @@ export function activate(context: vscode.ExtensionContext) {
 					}
 				}
 
-				// 添加文件路径标签（使用相对路径）
-				mergedContent += `<file path="${relativePath}">\n`;
-				mergedContent += content;
-				mergedContent += `\n</file>`;
+                // 使用模板替换变量
+                const fileContent = fileTemplate
+                    .replace(/{{Content}}/g, content)
+                    .replace(/{{FilePath}}/g, relativePath)
+                    .replace(/{{FileName}}/g, fileName)
+                    .replace(/{{FileExt}}/g, fileExt);
 
+                mergedContent += fileContent;
 				if (index < openDocuments.length - 1) {
 					mergedContent += '\n\n';
 				}
@@ -46,7 +62,7 @@ export function activate(context: vscode.ExtensionContext) {
 			// 创建并显示新文档
 			const newDocument = await vscode.workspace.openTextDocument({
 				content: mergedContent,
-				language: 'plaintext'
+				language: 'markdown'
 			});
 
 			await vscode.window.showTextDocument(newDocument, { preview: false });
@@ -60,3 +76,4 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() { }
+

@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -34,6 +34,16 @@
           "command": "files-to-prompt.openedFiles"
         }
       ]
+    },
+    "configuration": {
+      "title": "Files to Prompt",
+      "properties": {
+        "filesToPrompt.fileTemplate": {
+          "type": "string",
+          "default": "```{{FilePath}}\n{{Content}}\n```",
+          "description": "每个文件的模板。可用变量: {{Content}}, {{FilePath}}, {{FileName}}, {{FileExt}}"
+        }
+      }
     }
   },
   "scripts": {
