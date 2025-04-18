@@ -2,6 +2,10 @@
   "name": "files-to-prompt",
   "displayName": "files-to-prompt",
   "description": "将打开的文件的内容合并为一个 prompt，方便你复制给 GPT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/frostime/vscode-files2prompt"
+  },
   "version": "0.1.0",
   "engines": {
     "vscode": "^1.95.0"
@@ -33,10 +37,9 @@
     }
   },
   "scripts": {
-    "vscode:prepublish": "pnpm run compile",
+    "vscode:prepublish": "yarn run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "pretest": "pnpm run compile && pnpm run lint",
     "lint": "eslint src",
     "test": "vscode-test"
   },
