@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 			// 获取所有打开的文档（包括所有标签页）
 			const openDocuments = vscode.workspace.textDocuments;
-			
+
 			if (openDocuments.length === 0) {
 				vscode.window.showInformationMessage('No files are open to merge');
 				return;
