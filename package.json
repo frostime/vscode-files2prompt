@@ -1,0 +1,54 @@
+{
+  "name": "files-to-prompt",
+  "displayName": "files-to-prompt",
+  "description": "将打开的文件的内容合并为一个 prompt，方便你复制给 GPT",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "files-to-prompt.openedFiles",
+        "title": "将打开的文件的内容合并为 Prompt",
+        "category": "Merge Files"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "files-to-prompt.openedFiles",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "files-to-prompt.openedFiles"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "pnpm run compile && pnpm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.99.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1"
+  }
+}
