@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "0.1.1",
+  "version": "0.2.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -42,6 +42,20 @@
           "type": "string",
           "default": "```{{FilePath}}\n{{Content}}\n```",
           "description": "每个文件的模板。可用变量: {{Content}}, {{FilePath}}, {{FileName}}, {{FileExt}}"
+        },
+        "filesToPrompt.baseTemplate": {
+          "type": "string",
+          "default": "### Code Files ###\n\n{{FilePathList}}\n\n{{FilesPrompts}}",
+          "description": "基础模板，用于包裹所有文件内容。可用变量: {{FilePathList}}, {{FilesPrompts}}"
+        },
+        "filesToPrompt.sortOrder": {
+          "type": "string",
+          "default": "openingOrder",
+          "enum": [
+            "openingOrder",
+            "filePath"
+          ],
+          "description": "指定合并文档时的排序方式。'openingOrder' (默认值) 保持原始顺序，'filePath' 按文件路径排序。"
         }
       }
     }
