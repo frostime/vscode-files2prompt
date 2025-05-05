@@ -4,6 +4,7 @@
   "author": {
     "name": "frostime"
   },
+  "publisher": "frostime",
   "description": "快速将你项目中的代码合并成一个 Prompt，方便你复制给 GPT",
   "repository": {
     "type": "git",
