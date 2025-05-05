@@ -20,18 +20,142 @@
         "command": "files-to-prompt.openedFiles",
         "title": "将打开的文件的内容合并为 Prompt",
         "category": "Merge Files"
+      },
+      {
+        "command": "files-to-prompt.startCollecting",
+        "title": "开始拼接 Prompt",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.stopCollecting",
+        "title": "结束拼接 Prompt",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.addFileToPrompt",
+        "title": "添加文件到 Prompt 集合",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.addSelectionToPrompt",
+        "title": "添加选中内容到 Prompt 集合",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.removeItemFromPrompt",
+        "title": "从 Prompt 集合中删除",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.clearPromptItems",
+        "title": "清空 Prompt 集合",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.generatePrompt",
+        "title": "生成 Prompt",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.showPromptPanel",
+        "title": "显示 Prompt 集合面板",
+        "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.previewPromptItem",
+        "title": "预览 Prompt 项目",
+        "category": "Prompt"
       }
     ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "prompt-explorer",
+          "title": "Prompt 集合",
+          "icon": "$(list-selection)"
+        }
+      ]
+    },
+    "views": {
+      "prompt-explorer": [
+        {
+          "id": "promptItemsView",
+          "name": "Prompt 集合",
+          "icon": "$(list-selection)"
+        }
+      ]
+    },
     "menus": {
       "editor/context": [
         {
           "command": "files-to-prompt.openedFiles",
           "group": "navigation"
+        },
+        {
+          "command": "files-to-prompt.addSelectionToPrompt",
+          "when": "editorHasSelection",
+          "group": "prompt@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "files-to-prompt.addFileToPrompt",
+          "group": "prompt@1"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "files-to-prompt.clearPromptItems",
+          "when": "view == promptItemsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "files-to-prompt.generatePrompt",
+          "when": "view == promptItemsView",
+          "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "files-to-prompt.removeItemFromPrompt",
+          "when": "view == promptItemsView",
+          "group": "inline"
         }
       ],
       "commandPalette": [
         {
           "command": "files-to-prompt.openedFiles"
+        },
+        {
+          "command": "files-to-prompt.startCollecting"
+        },
+        {
+          "command": "files-to-prompt.stopCollecting"
+        },
+        {
+          "command": "files-to-prompt.generatePrompt"
+        },
+        {
+          "command": "files-to-prompt.clearPromptItems"
+        },
+        {
+          "command": "files-to-prompt.showPromptPanel"
+        },
+        {
+          "command": "files-to-prompt.addFileToPrompt",
+          "when": "false"
+        },
+        {
+          "command": "files-to-prompt.addSelectionToPrompt",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "files-to-prompt.removeItemFromPrompt",
+          "when": "false"
+        },
+        {
+          "command": "files-to-prompt.previewPromptItem",
+          "when": "false"
         }
       ]
     },
@@ -69,14 +193,18 @@
     "package": "vsce package"
   },
   "devDependencies": {
-    "@types/vscode": "^1.95.0",
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
+    "@types/uuid": "^10.0.0",
+    "@types/vscode": "^1.95.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
-    "eslint": "^9.23.0",
-    "typescript": "^5.8.2",
     "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.23.0",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "uuid": "^11.1.0"
   }
 }

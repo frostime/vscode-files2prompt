@@ -3,11 +3,15 @@
  * @Author       : frostime
  * @Date         : 2025-04-18 15:05:28
  * @FilePath     : /src/extension.ts
- * @LastEditTime : 2025-04-20 15:57:06
- * @Description  : 
+ * @LastEditTime : 2025-05-05 15:31:20
+ * @Description  :
  */
 import * as vscode from 'vscode';
 import * as path from 'path';
+import { PromptManager } from './promptManager';
+import { PromptTreeProvider } from './promptTreeProvider';
+import { StatusBarController } from './statusBarController';
+import { registerCommands } from './commandHandler';
 
 export function activate(context: vscode.ExtensionContext) {
 	// 读取配置
@@ -16,7 +20,23 @@ export function activate(context: vscode.ExtensionContext) {
 	const baseTemplate = config.get<string>('baseTemplate', '{{FilesPrompts}}');
 	const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
 
-	// 注册命令
+	// 创建 PromptManager 实例
+	const promptManager = new PromptManager(fileTemplate, baseTemplate);
+
+	// 创建 TreeView
+	const promptTreeProvider = new PromptTreeProvider(promptManager);
+	const treeView = vscode.window.createTreeView('promptItemsView', {
+		treeDataProvider: promptTreeProvider,
+		showCollapseAll: true
+	});
+
+	// 创建状态栏控制器
+	const statusBarController = new StatusBarController(promptManager);
+
+	// 注册新命令
+	registerCommands(context, promptManager, promptTreeProvider, statusBarController);
+
+	// 注册原有命令 - 一键合并所有打开的文件
 	let disposable = vscode.commands.registerCommand('files-to-prompt.openedFiles', async () => {
 		try {
 			// 获取所有打开的文档（包括所有标签页）
@@ -56,10 +76,6 @@ export function activate(context: vscode.ExtensionContext) {
 					.replace(/{{FileName}}/g, fileName)
 					.replace(/{{FileExt}}/g, fileExt);
 
-				// mergedContent += fileContent;
-				// if (index < openDocuments.length - 1) {
-				// 	mergedContent += '\n\n';
-				// }
 				prompts.push({
 					path: relativePath,
 					prompt: fileContent,
@@ -93,9 +109,11 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	context.subscriptions.push(disposable);
+	context.subscriptions.push(
+		disposable,
+		treeView,
+		statusBarController
+	);
 }
 
 export function deactivate() { }
-
-
