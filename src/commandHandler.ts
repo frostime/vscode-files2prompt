@@ -15,7 +15,7 @@ export function registerCommands(
 
   // 注册命令 - 添加文件到 prompt 集合
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.addFileToPrompt', async (uriOrUris: vscode.Uri | vscode.Uri[]) => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.addFileToPrompt', async (uriOrUris: vscode.Uri | vscode.Uri[]) => {
       // 处理多个文件的情况
       if (Array.isArray(uriOrUris)) {
         for (const uri of uriOrUris) {
@@ -53,7 +53,7 @@ export function registerCommands(
 
   // 注册命令 - 添加选中内容到 prompt 集合
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.addSelectionToPrompt', async () => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.addSelectionToPrompt', async () => {
       const editor = vscode.window.activeTextEditor;
       if (editor && !editor.selection.isEmpty) {
         const title = await vscode.window.showInputBox({
@@ -71,7 +71,7 @@ export function registerCommands(
 
   // 注册命令 - 从 prompt 集合中删除项目
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.removeItemFromPrompt', (node: PromptItemNode) => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.removeItemFromPrompt', (node: PromptItemNode) => {
       if (node) {
         promptManager.removeItem(node.id);
       }
@@ -80,7 +80,7 @@ export function registerCommands(
 
   // 注册命令 - 上移项目
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.moveItemUp', (node: PromptItemNode) => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.moveItemUp', (node: PromptItemNode) => {
       if (node) {
         const items = promptManager.getItems();
         const index = items.findIndex(item => item.id === node.id);
@@ -93,7 +93,7 @@ export function registerCommands(
 
   // 注册命令 - 下移项目
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.moveItemDown', (node: PromptItemNode) => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.moveItemDown', (node: PromptItemNode) => {
       if (node) {
         const items = promptManager.getItems();
         const index = items.findIndex(item => item.id === node.id);
@@ -106,15 +106,15 @@ export function registerCommands(
 
   // 注册命令 - 清空 prompt 集合
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.clearPromptItems', () => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.clearPromptItems', () => {
       promptManager.clear();
     })
   );
 
   // 注册命令 - 生成最终的 prompt
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.generatePrompt', async () => {
-      const config = vscode.workspace.getConfiguration('codeToPrompt');
+    vscode.commands.registerCommand('assemble-code-to-prompt.generatePrompt', async () => {
+      const config = vscode.workspace.getConfiguration('CodeToPrompt');
       const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
 
       const prompt = promptManager.generatePrompt(sortOrder);
@@ -131,7 +131,7 @@ export function registerCommands(
 
   // 注册命令 - 一键合并所有打开的文件
   context.subscriptions.push(
-    vscode.commands.registerCommand('code-to-prompt.openedFiles', async () => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.openedFiles', async () => {
       try {
         // 获取所有打开的文档（包括所有标签页）
         const openDocuments = vscode.workspace.textDocuments;
@@ -160,7 +160,7 @@ export function registerCommands(
         vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
 
         // 生成 prompt
-        const config = vscode.workspace.getConfiguration('codeToPrompt');
+        const config = vscode.workspace.getConfiguration('CodeToPrompt');
         const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
 
         const prompt = promptManager.generatePrompt(sortOrder);

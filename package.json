@@ -1,5 +1,5 @@
 {
-  "name": "code-to-prompt",
+  "name": "assemble-code-to-prompt",
   "displayName": "Code to Prompt",
   "author": {
     "name": "frostime"
@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "1.0.1",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -21,44 +21,44 @@
   "contributes": {
     "commands": [
       {
-        "command": "code-to-prompt.openedFiles",
+        "command": "assemble-code-to-prompt.openedFiles",
         "title": "将打开的文件的内容合并为 Prompt",
         "category": "Prompt"
       },
 
       {
-        "command": "code-to-prompt.addFileToPrompt",
+        "command": "assemble-code-to-prompt.addFileToPrompt",
         "title": "添加文件到 Prompt 集合",
         "category": "Prompt"
       },
       {
-        "command": "code-to-prompt.addSelectionToPrompt",
+        "command": "assemble-code-to-prompt.addSelectionToPrompt",
         "title": "添加选中内容到 Prompt 集合",
         "category": "Prompt"
       },
       {
-        "command": "code-to-prompt.removeItemFromPrompt",
+        "command": "assemble-code-to-prompt.removeItemFromPrompt",
         "title": "从 Prompt 集合中删除",
         "category": "Prompt"
       },
       {
-        "command": "code-to-prompt.clearPromptItems",
+        "command": "assemble-code-to-prompt.clearPromptItems",
         "title": "清空 Prompt 集合",
         "category": "Prompt"
       },
       {
-        "command": "code-to-prompt.generatePrompt",
+        "command": "assemble-code-to-prompt.generatePrompt",
         "title": "生成 Prompt",
         "category": "Prompt"
       },
       {
-        "command": "code-to-prompt.moveItemUp",
+        "command": "assemble-code-to-prompt.moveItemUp",
         "title": "上移",
         "category": "Prompt",
         "icon": "$(arrow-up)"
       },
       {
-        "command": "code-to-prompt.moveItemDown",
+        "command": "assemble-code-to-prompt.moveItemDown",
         "title": "下移",
         "category": "Prompt",
         "icon": "$(arrow-down)"
@@ -85,108 +85,108 @@
     "menus": {
       "editor/context": [
         {
-          "command": "code-to-prompt.openedFiles",
+          "command": "assemble-code-to-prompt.openedFiles",
           "group": "prompt@0"
         },
         {
-          "command": "code-to-prompt.addFileToPrompt",
+          "command": "assemble-code-to-prompt.addFileToPrompt",
           "group": "prompt@1"
         },
         {
-          "command": "code-to-prompt.addSelectionToPrompt",
+          "command": "assemble-code-to-prompt.addSelectionToPrompt",
           "when": "editorHasSelection",
           "group": "prompt@2"
         }
       ],
       "editor/title/context": [
         {
-          "command": "code-to-prompt.addFileToPrompt",
+          "command": "assemble-code-to-prompt.addFileToPrompt",
           "group": "prompt@1"
         }
       ],
       "explorer/context": [
         {
-          "command": "code-to-prompt.addFileToPrompt",
+          "command": "assemble-code-to-prompt.addFileToPrompt",
           "group": "prompt@1",
           "when": "explorerResourceIsFolder || explorerResourceIsRoot || resourceExtname"
         }
       ],
       "view/title": [
         {
-          "command": "code-to-prompt.clearPromptItems",
+          "command": "assemble-code-to-prompt.clearPromptItems",
           "when": "view == promptItemsView",
           "group": "navigation@1"
         },
         {
-          "command": "code-to-prompt.generatePrompt",
+          "command": "assemble-code-to-prompt.generatePrompt",
           "when": "view == promptItemsView",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
-          "command": "code-to-prompt.removeItemFromPrompt",
+          "command": "assemble-code-to-prompt.removeItemFromPrompt",
           "when": "view == promptItemsView",
           "group": "inline"
         },
         {
-          "command": "code-to-prompt.moveItemUp",
+          "command": "assemble-code-to-prompt.moveItemUp",
           "when": "view == promptItemsView",
           "group": "inline"
         },
         {
-          "command": "code-to-prompt.moveItemDown",
+          "command": "assemble-code-to-prompt.moveItemDown",
           "when": "view == promptItemsView",
           "group": "inline"
         }
       ],
       "commandPalette": [
         {
-          "command": "code-to-prompt.openedFiles"
+          "command": "assemble-code-to-prompt.openedFiles"
         },
 
         {
-          "command": "code-to-prompt.generatePrompt"
+          "command": "assemble-code-to-prompt.generatePrompt"
         },
         {
-          "command": "code-to-prompt.clearPromptItems"
+          "command": "assemble-code-to-prompt.clearPromptItems"
         },
         {
-          "command": "code-to-prompt.addFileToPrompt",
+          "command": "assemble-code-to-prompt.addFileToPrompt",
           "when": "false"
         },
         {
-          "command": "code-to-prompt.addSelectionToPrompt",
+          "command": "assemble-code-to-prompt.addSelectionToPrompt",
           "when": "editorHasSelection"
         },
         {
-          "command": "code-to-prompt.removeItemFromPrompt",
+          "command": "assemble-code-to-prompt.removeItemFromPrompt",
           "when": "false"
         },
         {
-          "command": "code-to-prompt.moveItemUp",
+          "command": "assemble-code-to-prompt.moveItemUp",
           "when": "false"
         },
         {
-          "command": "code-to-prompt.moveItemDown",
+          "command": "assemble-code-to-prompt.moveItemDown",
           "when": "false"
         }
       ]
     },
     "configuration": {
-      "title": "Code to Prompt",
+      "title": "Assemble Code to Prompt",
       "properties": {
-        "codeToPrompt.fileTemplate": {
+        "CodeToPrompt.fileTemplate": {
           "type": "string",
           "default": "```{{FilePath}}\n{{Content}}\n```",
           "description": "每个文件的模板。可用变量: {{Content}}, {{FilePath}}, {{FileName}}, {{FileExt}}"
         },
-        "codeToPrompt.baseTemplate": {
+        "CodeToPrompt.baseTemplate": {
           "type": "string",
           "default": "### Codes ###\n\nOutlines:\n\n{{FilePathList}}\n\nContent:\n\n{{FilesPrompts}}",
           "description": "基础模板，用于包裹所有文件内容。可用变量: {{FilePathList}}, {{FilesPrompts}}"
         },
-        "codeToPrompt.sortOrder": {
+        "CodeToPrompt.sortOrder": {
           "type": "string",
           "default": "openingOrder",
           "enum": [

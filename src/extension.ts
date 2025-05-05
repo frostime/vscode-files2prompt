@@ -14,7 +14,7 @@ import { registerCommands } from './commandHandler';
 
 export function activate(context: vscode.ExtensionContext) {
 	// 读取配置
-	const config = vscode.workspace.getConfiguration('codeToPrompt');
+	const config = vscode.workspace.getConfiguration('CodeToPrompt');
 	const fileTemplate = config.get<string>('fileTemplate', '```{{FilePath}}\n{{Content}}\n```');
 	const baseTemplate = config.get<string>('baseTemplate', '### Codes ###\n\nOutlines:\n\n{{FilePathList}}\n\nContent:\n\n{{FilesPrompts}}');
 

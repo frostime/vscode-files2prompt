@@ -27,9 +27,9 @@ VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的
 
 在 VS Code 设置中可以自定义以下选项：
 
-- `codeToPrompt.fileTemplate`：每个文件的模板格式
-- `codeToPrompt.baseTemplate`：整体 Prompt 的模板格式
-- `codeToPrompt.sortOrder`：文件排序方式（按添加顺序或文件路径）
+- `CodeToPrompt.fileTemplate`：每个文件的模板格式
+- `CodeToPrompt.baseTemplate`：整体 Prompt 的模板格式
+- `CodeToPrompt.sortOrder`：文件排序方式（按添加顺序或文件路径）
 
 ## 示例输出
 
@@ -43,7 +43,7 @@ VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的
 > Content:
 >
 > ```package.json
->   "name": "code-to-prompt",
+>   "name": "assemble-code-to-prompt",
 >   "displayName": "Code to Prompt",
 >   "author": {
 >     "name": "frostime"
