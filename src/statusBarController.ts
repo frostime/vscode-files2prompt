@@ -9,7 +9,7 @@ export class StatusBarController {
 
   constructor(private promptManager: PromptManager) {
     this.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Left);
-    // this.statusBarItem.command = 'files-to-prompt.showPromptPanel';
+    // this.statusBarItem.command = 'code-to-prompt.showPromptPanel';
     this.updateStatusBar();
 
     // 监听 promptManager 的变化
