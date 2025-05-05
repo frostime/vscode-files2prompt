@@ -87,13 +87,6 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
       treeItem.tooltip = `代码片段: ${element.item.filePath} (lines ${element.item.lineStart}-${element.item.lineEnd})`;
     }
 
-    // 添加删除命令
-    treeItem.command = {
-      command: 'files-to-prompt.previewPromptItem',
-      title: '预览',
-      arguments: [element.item]
-    };
-
     return treeItem;
   }
 

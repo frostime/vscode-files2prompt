@@ -13,18 +13,21 @@ export function registerCommands(
   _statusBarController: StatusBarController
 ) {
 
-
-  // 注册命令 - 显示 prompt 面板
-  context.subscriptions.push(
-    vscode.commands.registerCommand('files-to-prompt.showPromptPanel', () => {
-      vscode.commands.executeCommand('workbench.view.extension.promptItemsView');
-    })
-  );
-
   // 注册命令 - 添加文件到 prompt 集合
   context.subscriptions.push(
-    vscode.commands.registerCommand('files-to-prompt.addFileToPrompt', async (uri: vscode.Uri) => {
-      if (!uri) {
+    vscode.commands.registerCommand('files-to-prompt.addFileToPrompt', async (uriOrUris: vscode.Uri | vscode.Uri[]) => {
+      // 处理多个文件的情况
+      if (Array.isArray(uriOrUris)) {
+        for (const uri of uriOrUris) {
+          await promptManager.addFile(uri);
+        }
+      }
+      // 处理单个文件的情况
+      else if (uriOrUris) {
+        await promptManager.addFile(uriOrUris);
+      }
+      // 处理没有参数的情况
+      else {
         // 检查是否从编辑器标签页调用
         const activeEditor = vscode.window.activeTextEditor;
         if (activeEditor && activeEditor.document.uri.scheme === 'file') {
@@ -41,8 +44,6 @@ export function registerCommands(
             }
           }
         }
-      } else {
-        await promptManager.addFile(uri);
       }
 
       // 自动显示 Prompt 面板
@@ -179,18 +180,4 @@ export function registerCommands(
     })
   );
 
-  // 注册命令 - 预览 prompt 项目
-  context.subscriptions.push(
-    vscode.commands.registerCommand('files-to-prompt.previewPromptItem', async (item) => {
-      if (item) {
-        // 创建并显示预览文档
-        const newDocument = await vscode.workspace.openTextDocument({
-          content: item.content,
-          language: item.language || 'plaintext'
-        });
-
-        await vscode.window.showTextDocument(newDocument, { preview: true });
-      }
-    })
-  );
 }

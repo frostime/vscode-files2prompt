@@ -48,16 +48,6 @@
         "category": "Prompt"
       },
       {
-        "command": "files-to-prompt.showPromptPanel",
-        "title": "显示 Prompt 集合面板",
-        "category": "Prompt"
-      },
-      {
-        "command": "files-to-prompt.previewPromptItem",
-        "title": "预览 Prompt 项目",
-        "category": "Prompt"
-      },
-      {
         "command": "files-to-prompt.moveItemUp",
         "title": "上移",
         "category": "Prompt",
@@ -113,7 +103,8 @@
       "explorer/context": [
         {
           "command": "files-to-prompt.addFileToPrompt",
-          "group": "prompt@1"
+          "group": "prompt@1",
+          "when": "explorerResourceIsFolder || explorerResourceIsRoot || resourceExtname"
         }
       ],
       "view/title": [
@@ -157,9 +148,6 @@
           "command": "files-to-prompt.clearPromptItems"
         },
         {
-          "command": "files-to-prompt.showPromptPanel"
-        },
-        {
           "command": "files-to-prompt.addFileToPrompt",
           "when": "false"
         },
@@ -169,10 +157,6 @@
         },
         {
           "command": "files-to-prompt.removeItemFromPrompt",
-          "when": "false"
-        },
-        {
-          "command": "files-to-prompt.previewPromptItem",
           "when": "false"
         },
         {
