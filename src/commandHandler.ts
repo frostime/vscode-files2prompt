@@ -10,24 +10,9 @@ export function registerCommands(
   context: vscode.ExtensionContext,
   promptManager: PromptManager,
   _treeProvider: PromptTreeProvider,
-  statusBarController: StatusBarController
+  _statusBarController: StatusBarController
 ) {
-  // 注册命令 - 开始拼接 prompt 模式
-  context.subscriptions.push(
-    vscode.commands.registerCommand('files-to-prompt.startCollecting', () => {
-      statusBarController.startCollecting();
-      vscode.commands.executeCommand('workbench.view.extension.promptItemsView');
-      vscode.window.showInformationMessage('已进入拼接 Prompt 模式，您可以添加文件或代码片段');
-    })
-  );
 
-  // 注册命令 - 结束拼接 prompt 模式
-  context.subscriptions.push(
-    vscode.commands.registerCommand('files-to-prompt.stopCollecting', () => {
-      statusBarController.stopCollecting();
-      vscode.window.showInformationMessage('已退出拼接 Prompt 模式');
-    })
-  );
 
   // 注册命令 - 显示 prompt 面板
   context.subscriptions.push(
@@ -60,8 +45,8 @@ export function registerCommands(
         await promptManager.addFile(uri);
       }
 
-      // 如果不在收集模式，自动开始收集
-      statusBarController.startCollecting();
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
     })
   );
 
@@ -75,8 +60,8 @@ export function registerCommands(
         });
         promptManager.addSnippet(editor.document, editor.selection, title || undefined);
 
-        // 如果不在收集模式，自动开始收集
-        statusBarController.startCollecting();
+        // 自动显示 Prompt 面板
+        vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
       } else {
         vscode.window.showWarningMessage('请先选择代码片段');
       }
@@ -168,8 +153,7 @@ export function registerCommands(
           await promptManager.addFile(document.uri);
         }
 
-        // 自动开始收集模式
-        statusBarController.startCollecting();
+
 
         // 显示 TreeView
         vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');

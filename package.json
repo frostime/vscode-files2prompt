@@ -1,12 +1,12 @@
 {
   "name": "files-to-prompt",
   "displayName": "files-to-prompt",
-  "description": "将打开的文件的内容合并为一个 prompt，方便你复制给 GPT",
+  "description": "快速将你项目中的代码合并成一个 Prompt，方便你复制给 GPT",
   "repository": {
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "0.2.0",
+  "version": "1.0.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -21,16 +21,7 @@
         "title": "将打开的文件的内容合并为 Prompt",
         "category": "Prompt"
       },
-      {
-        "command": "files-to-prompt.startCollecting",
-        "title": "开始拼接 Prompt",
-        "category": "Prompt"
-      },
-      {
-        "command": "files-to-prompt.stopCollecting",
-        "title": "结束拼接 Prompt",
-        "category": "Prompt"
-      },
+
       {
         "command": "files-to-prompt.addFileToPrompt",
         "title": "添加文件到 Prompt 集合",
@@ -158,12 +149,7 @@
         {
           "command": "files-to-prompt.openedFiles"
         },
-        {
-          "command": "files-to-prompt.startCollecting"
-        },
-        {
-          "command": "files-to-prompt.stopCollecting"
-        },
+
         {
           "command": "files-to-prompt.generatePrompt"
         },
