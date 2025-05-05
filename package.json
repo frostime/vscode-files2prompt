@@ -65,6 +65,18 @@
         "command": "files-to-prompt.previewPromptItem",
         "title": "预览 Prompt 项目",
         "category": "Prompt"
+      },
+      {
+        "command": "files-to-prompt.moveItemUp",
+        "title": "上移",
+        "category": "Prompt",
+        "icon": "$(arrow-up)"
+      },
+      {
+        "command": "files-to-prompt.moveItemDown",
+        "title": "下移",
+        "category": "Prompt",
+        "icon": "$(arrow-down)"
       }
     ],
     "viewsContainers": {
@@ -92,8 +104,18 @@
           "group": "navigation"
         },
         {
+          "command": "files-to-prompt.addFileToPrompt",
+          "group": "prompt@1"
+        },
+        {
           "command": "files-to-prompt.addSelectionToPrompt",
           "when": "editorHasSelection",
+          "group": "prompt@2"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "files-to-prompt.addFileToPrompt",
           "group": "prompt@1"
         }
       ],
@@ -118,6 +140,16 @@
       "view/item/context": [
         {
           "command": "files-to-prompt.removeItemFromPrompt",
+          "when": "view == promptItemsView",
+          "group": "inline"
+        },
+        {
+          "command": "files-to-prompt.moveItemUp",
+          "when": "view == promptItemsView",
+          "group": "inline"
+        },
+        {
+          "command": "files-to-prompt.moveItemDown",
           "when": "view == promptItemsView",
           "group": "inline"
         }
@@ -156,6 +188,14 @@
         {
           "command": "files-to-prompt.previewPromptItem",
           "when": "false"
+        },
+        {
+          "command": "files-to-prompt.moveItemUp",
+          "when": "false"
+        },
+        {
+          "command": "files-to-prompt.moveItemDown",
+          "when": "false"
         }
       ]
     },
@@ -169,7 +209,7 @@
         },
         "filesToPrompt.baseTemplate": {
           "type": "string",
-          "default": "### Code Files ###\n\n{{FilePathList}}\n\n{{FilesPrompts}}",
+          "default": "### Codes ###\n\nOutlines:\n\n{{FilePathList}}\n\nContent:\n\n{{FilesPrompts}}",
           "description": "基础模板，用于包裹所有文件内容。可用变量: {{FilePathList}}, {{FilesPrompts}}"
         },
         "filesToPrompt.sortOrder": {

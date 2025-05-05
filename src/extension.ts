@@ -3,7 +3,7 @@
  * @Author       : frostime
  * @Date         : 2025-04-18 15:05:28
  * @FilePath     : /src/extension.ts
- * @LastEditTime : 2025-05-05 15:31:20
+ * @LastEditTime : 2025-05-05 16:04:07
  * @Description  :
  */
 import * as vscode from 'vscode';
@@ -17,7 +17,7 @@ export function activate(context: vscode.ExtensionContext) {
 	// 读取配置
 	const config = vscode.workspace.getConfiguration('filesToPrompt');
 	const fileTemplate = config.get<string>('fileTemplate', '```{{FilePath}}\n{{Content}}\n```');
-	const baseTemplate = config.get<string>('baseTemplate', '{{FilesPrompts}}');
+	const baseTemplate = config.get<string>('baseTemplate', '### Codes ###\n\nOutlines:\n\n{{FilePathList}}\n\nContent:\n\n{{FilesPrompts}}');
 	const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
 
 	// 创建 PromptManager 实例
@@ -27,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const promptTreeProvider = new PromptTreeProvider(promptManager);
 	const treeView = vscode.window.createTreeView('promptItemsView', {
 		treeDataProvider: promptTreeProvider,
+		dragAndDropController: promptTreeProvider,
 		showCollapseAll: true
 	});
 
