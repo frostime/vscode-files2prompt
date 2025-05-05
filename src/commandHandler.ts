@@ -2,7 +2,6 @@
  * Copyright (c) 2025 by frostime. All Rights Reserved.
  */
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { PromptManager } from './promptManager';
 import { PromptTreeProvider, PromptItemNode } from './promptTreeProvider';
 import { StatusBarController } from './statusBarController';
@@ -10,7 +9,7 @@ import { StatusBarController } from './statusBarController';
 export function registerCommands(
   context: vscode.ExtensionContext,
   promptManager: PromptManager,
-  treeProvider: PromptTreeProvider,
+  _treeProvider: PromptTreeProvider,
   statusBarController: StatusBarController
 ) {
   // 注册命令 - 开始拼接 prompt 模式
@@ -141,6 +140,58 @@ export function registerCommands(
       });
 
       await vscode.window.showTextDocument(newDocument, { preview: false });
+    })
+  );
+
+  // 注册命令 - 一键合并所有打开的文件
+  context.subscriptions.push(
+    vscode.commands.registerCommand('files-to-prompt.openedFiles', async () => {
+      try {
+        // 获取所有打开的文档（包括所有标签页）
+        const openDocuments = vscode.workspace.textDocuments;
+
+        if (openDocuments.length === 0) {
+          vscode.window.showInformationMessage('没有打开的文件可以合并');
+          return;
+        }
+
+        // 清空当前 PromptManager 中的所有项目
+        promptManager.clear();
+
+        // 将所有打开的文件添加到 PromptManager
+        for (const document of openDocuments) {
+          // 跳过未保存到文件系统的文档（如：无标题文档）
+          if (document.uri.scheme !== 'file') {
+            continue;
+          }
+
+          await promptManager.addFile(document.uri);
+        }
+
+        // 自动开始收集模式
+        statusBarController.startCollecting();
+
+        // 显示 TreeView
+        vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+
+        // 生成 prompt
+        const config = vscode.workspace.getConfiguration('filesToPrompt');
+        const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
+
+        const prompt = promptManager.generatePrompt(sortOrder);
+
+        // 创建并显示新文档
+        const newDocument = await vscode.workspace.openTextDocument({
+          content: prompt,
+          language: 'markdown'
+        });
+
+        await vscode.window.showTextDocument(newDocument, { preview: false });
+
+        vscode.window.showInformationMessage(`已将 ${promptManager.getItems().length} 个文件添加到 Prompt 集合并生成 Prompt`);
+      } catch (error) {
+        vscode.window.showErrorMessage(`合并文件失败: ${error instanceof Error ? error.message : String(error)}`);
+      }
     })
   );
 

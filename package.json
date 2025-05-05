@@ -19,7 +19,7 @@
       {
         "command": "files-to-prompt.openedFiles",
         "title": "将打开的文件的内容合并为 Prompt",
-        "category": "Merge Files"
+        "category": "Prompt"
       },
       {
         "command": "files-to-prompt.startCollecting",
@@ -101,7 +101,7 @@
       "editor/context": [
         {
           "command": "files-to-prompt.openedFiles",
-          "group": "navigation"
+          "group": "prompt@0"
         },
         {
           "command": "files-to-prompt.addFileToPrompt",
