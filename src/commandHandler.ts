@@ -56,10 +56,10 @@ export function registerCommands(
     vscode.commands.registerCommand('assemble-code-to-prompt.addSelectionToPrompt', async () => {
       const editor = vscode.window.activeTextEditor;
       if (editor && !editor.selection.isEmpty) {
-        const title = await vscode.window.showInputBox({
-          prompt: '为代码片段添加标题（可选）'
-        });
-        promptManager.addSnippet(editor.document, editor.selection, title || undefined);
+        // const title = await vscode.window.showInputBox({
+        //   prompt: '为代码片段添加标题（可选）'
+        // });
+        promptManager.addSnippet(editor.document, editor.selection);
 
         // 自动显示 Prompt 面板
         vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');

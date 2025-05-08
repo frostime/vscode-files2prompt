@@ -189,7 +189,7 @@ export class PromptManager {
       const item: PromptItem = {
         id: uuidv4(),
         type: 'snippet',
-        title: title || `${fileName} (lines ${lineStart}-${lineEnd})`,
+        title: title || '',
         content: content,
         filePath: relativePath,
         language: document.languageId,
