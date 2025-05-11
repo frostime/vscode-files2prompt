@@ -91,7 +91,7 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
     }
 
     // 设置上下文
-    treeItem.contextValue = element.item.type;
+    treeItem.contextValue = `promptItem-${element.item.type}`;
 
     return treeItem;
   }

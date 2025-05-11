@@ -53,7 +53,7 @@ export class PromptManager {
       );
 
       if (existingItem) {
-        vscode.window.showInformationMessage(`文件已存在: ${fileName}`);
+        vscode.window.setStatusBarMessage(`文件已存在: ${fileName}`, 3000);
         return;
       }
 
@@ -70,7 +70,7 @@ export class PromptManager {
       this.items.push(item);
       this._onDidChangeItems.fire();
 
-      vscode.window.showInformationMessage(`已添加文件: ${fileName}`);
+      vscode.window.setStatusBarMessage(`已添加文件: ${fileName}`, 3000);
     } catch (error) {
       vscode.window.showErrorMessage(`添加文件失败: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -130,9 +130,9 @@ export class PromptManager {
       }
 
       if (addedCount > 0) {
-        vscode.window.showInformationMessage(`已从目录 ${dirName} 添加 ${addedCount} 个文件`);
+        vscode.window.setStatusBarMessage(`已从目录 ${dirName} 添加 ${addedCount} 个文件`, 3000);
       } else {
-        vscode.window.showInformationMessage(`目录 ${dirName} 中没有找到可添加的文件`);
+        vscode.window.setStatusBarMessage(`目录 ${dirName} 中没有找到可添加的文件`, 3000);
       }
 
       return addedCount;
@@ -177,7 +177,7 @@ export class PromptManager {
       );
 
       if (existingItem) {
-        vscode.window.showInformationMessage(`代码片段已存在: ${existingItem.title}`);
+        vscode.window.setStatusBarMessage(`代码片段已存在: ${existingItem.title}`, 3000);
         return;
       }
 
@@ -196,7 +196,7 @@ export class PromptManager {
       this.items.push(item);
       this._onDidChangeItems.fire();
 
-      vscode.window.showInformationMessage(`已添加代码片段: ${item.title}`);
+      vscode.window.setStatusBarMessage(`已添加代码片段: ${item.title}`, 3000);
     } catch (error) {
       vscode.window.showErrorMessage(`添加代码片段失败: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -241,7 +241,7 @@ export class PromptManager {
         this.items.push(item);
         this._onDidChangeItems.fire();
 
-        vscode.window.showInformationMessage(`已添加终端输出: ${terminalName}`);
+        vscode.window.setStatusBarMessage(`已添加终端输出: ${terminalName}`, 3000);
       } catch (err) {
         console.error('获取终端输出失败:', err);
 
@@ -267,7 +267,7 @@ export class PromptManager {
         this.items.push(item);
         this._onDidChangeItems.fire();
 
-        vscode.window.showInformationMessage(`已添加终端输出: ${terminalName}`);
+        vscode.window.setStatusBarMessage(`已添加终端输出: ${terminalName}`, 3000);
       }
     } catch (error) {
       vscode.window.showErrorMessage(`添加终端输出失败: ${error instanceof Error ? error.message : String(error)}`);
@@ -303,7 +303,7 @@ export class PromptManager {
       this.items.push(item);
       this._onDidChangeItems.fire();
 
-      vscode.window.showInformationMessage(`已添加文件夹树结构: ${folderName}`);
+      vscode.window.setStatusBarMessage(`已添加文件夹树结构: ${folderName}`, 3000);
     } catch (error) {
       vscode.window.showErrorMessage(`添加文件夹树结构失败: ${error instanceof Error ? error.message : String(error)}`);
     }
@@ -372,7 +372,7 @@ export class PromptManager {
       }
 
       this._onDidChangeItems.fire();
-      vscode.window.showInformationMessage(`已删除: ${item.title}`);
+      vscode.window.setStatusBarMessage(`已删除: ${item.title}`, 3000);
     }
   }
 
@@ -398,7 +398,7 @@ export class PromptManager {
   clear(): void {
     this.items = [];
     this._onDidChangeItems.fire();
-    vscode.window.showInformationMessage('已清空 Prompt 集合');
+    vscode.window.setStatusBarMessage('已清空 Prompt 集合', 3000);
   }
 
   // 获取所有项目

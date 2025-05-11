@@ -10,55 +10,76 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "1.1.1",
+  "version": "2.0.0",
   "engines": {
     "vscode": "^1.95.0"
   },
+  "icon": "icon.jpg",
+  "galleryBanner": {
+    "color": "#C80000",
+    "theme": "dark"
+  },
+  "preview": true,
   "categories": [
     "Other"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "submenus": [
+      {
+        "id": "assemble-code-to-prompt.addToPromptSubmenu",
+        "label": "添加到 Prompt",
+        "icon": "$(add)"
+      }
+    ],
     "commands": [
       {
         "command": "assemble-code-to-prompt.addOpenedFilesToPrompt",
         "title": "添加所有打开的文件到 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(add)"
       },
       {
         "command": "assemble-code-to-prompt.addFileToPrompt",
         "title": "添加本文件到 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(file)"
       },
       {
         "command": "assemble-code-to-prompt.addSelectionToPrompt",
         "title": "添加选中内容到 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(selection)"
       },
       {
         "command": "assemble-code-to-prompt.addTerminalOutputToPrompt",
         "title": "添加终端输出到 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(terminal)"
       },
       {
         "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
         "title": "添加文件夹树结构到 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(list-tree)"
       },
       {
         "command": "assemble-code-to-prompt.removeItemFromPrompt",
         "title": "从 Prompt 集合中删除",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(trash)"
       },
       {
         "command": "assemble-code-to-prompt.clearPromptItems",
         "title": "清空 Prompt 集合",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(clear-all)"
       },
       {
         "command": "assemble-code-to-prompt.generatePrompt",
         "title": "生成 Prompt",
-        "category": "Prompt"
+        "category": "Prompt",
+        "icon": "$(play)"
       },
       {
         "command": "assemble-code-to-prompt.moveItemUp",
@@ -141,23 +162,50 @@
           "command": "assemble-code-to-prompt.generatePrompt",
           "when": "view == promptItemsView",
           "group": "navigation@2"
+        },
+        {
+          "submenu": "assemble-code-to-prompt.addToPromptSubmenu",
+          "when": "view == promptItemsView",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
         {
           "command": "assemble-code-to-prompt.removeItemFromPrompt",
           "when": "view == promptItemsView",
-          "group": "inline"
+          "group": "inline@1"
         },
         {
           "command": "assemble-code-to-prompt.moveItemUp",
           "when": "view == promptItemsView",
-          "group": "inline"
+          "group": "inline@2"
         },
         {
           "command": "assemble-code-to-prompt.moveItemDown",
           "when": "view == promptItemsView",
-          "group": "inline"
+          "group": "inline@3"
+        }
+      ],
+      "assemble-code-to-prompt.addToPromptSubmenu": [
+        {
+          "command": "assemble-code-to-prompt.addOpenedFilesToPrompt",
+          "group": "1_add@1"
+        },
+        {
+          "command": "assemble-code-to-prompt.addFileToPrompt",
+          "group": "1_add@2"
+        },
+        {
+          "command": "assemble-code-to-prompt.addSelectionToPrompt",
+          "group": "1_add@3"
+        },
+        {
+          "command": "assemble-code-to-prompt.addTerminalOutputToPrompt",
+          "group": "1_add@4"
+        },
+        {
+          "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
+          "group": "1_add@5"
         }
       ],
       "commandPalette": [
