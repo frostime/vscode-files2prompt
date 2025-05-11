@@ -5,7 +5,7 @@
     "name": "frostime"
   },
   "publisher": "frostime",
-  "description": "快速将你项目中的代码合并成一个 Prompt，方便你复制给 GPT",
+  "description": "快速将代码、终端输出和文件夹结构合并成一个 Prompt，方便你复制给 GPT",
   "repository": {
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
@@ -21,19 +21,28 @@
   "contributes": {
     "commands": [
       {
-        "command": "assemble-code-to-prompt.openedFiles",
-        "title": "将打开的文件的内容合并为 Prompt",
+        "command": "assemble-code-to-prompt.addOpenedFilesToPrompt",
+        "title": "添加所有打开的文件到 Prompt 集合",
         "category": "Prompt"
       },
-
       {
         "command": "assemble-code-to-prompt.addFileToPrompt",
-        "title": "添加文件到 Prompt 集合",
+        "title": "添加本文件到 Prompt 集合",
         "category": "Prompt"
       },
       {
         "command": "assemble-code-to-prompt.addSelectionToPrompt",
         "title": "添加选中内容到 Prompt 集合",
+        "category": "Prompt"
+      },
+      {
+        "command": "assemble-code-to-prompt.addTerminalOutputToPrompt",
+        "title": "添加终端输出到 Prompt 集合",
+        "category": "Prompt"
+      },
+      {
+        "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
+        "title": "添加文件夹树结构到 Prompt 集合",
         "category": "Prompt"
       },
       {
@@ -85,7 +94,7 @@
     "menus": {
       "editor/context": [
         {
-          "command": "assemble-code-to-prompt.openedFiles",
+          "command": "assemble-code-to-prompt.addOpenedFilesToPrompt",
           "group": "prompt@0"
         },
         {
@@ -96,6 +105,12 @@
           "command": "assemble-code-to-prompt.addSelectionToPrompt",
           "when": "editorHasSelection",
           "group": "prompt@2"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "assemble-code-to-prompt.addTerminalOutputToPrompt",
+          "group": "prompt@1"
         }
       ],
       "editor/title/context": [
@@ -109,6 +124,11 @@
           "command": "assemble-code-to-prompt.addFileToPrompt",
           "group": "prompt@1",
           "when": "explorerResourceIsFolder || explorerResourceIsRoot || resourceExtname"
+        },
+        {
+          "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
+          "group": "prompt@2",
+          "when": "explorerResourceIsFolder || explorerResourceIsRoot"
         }
       ],
       "view/title": [
@@ -142,14 +162,19 @@
       ],
       "commandPalette": [
         {
-          "command": "assemble-code-to-prompt.openedFiles"
+          "command": "assemble-code-to-prompt.addOpenedFilesToPrompt"
         },
-
         {
           "command": "assemble-code-to-prompt.generatePrompt"
         },
         {
           "command": "assemble-code-to-prompt.clearPromptItems"
+        },
+        {
+          "command": "assemble-code-to-prompt.addTerminalOutputToPrompt"
+        },
+        {
+          "command": "assemble-code-to-prompt.addFolderTreeToPrompt"
         },
         {
           "command": "assemble-code-to-prompt.addFileToPrompt",
@@ -172,30 +197,6 @@
           "when": "false"
         }
       ]
-    },
-    "configuration": {
-      "title": "Assemble Code to Prompt",
-      "properties": {
-        "CodeToPrompt.fileTemplate": {
-          "type": "string",
-          "default": "```{{FilePath}}\n{{Content}}\n```",
-          "description": "每个文件的模板。可用变量: {{Content}}, {{FilePath}}, {{FileName}}, {{FileExt}}"
-        },
-        "CodeToPrompt.baseTemplate": {
-          "type": "string",
-          "default": "### Codes ###\n\nOutlines:\n\n{{FilePathList}}\n\nContent:\n\n{{FilesPrompts}}",
-          "description": "基础模板，用于包裹所有文件内容。可用变量: {{FilePathList}}, {{FilesPrompts}}"
-        },
-        "CodeToPrompt.sortOrder": {
-          "type": "string",
-          "default": "openingOrder",
-          "enum": [
-            "openingOrder",
-            "filePath"
-          ],
-          "description": "指定合并文档时的排序方式。'openingOrder' (默认值) 保持原始顺序，'filePath' 按文件路径排序。"
-        }
-      }
     }
   },
   "scripts": {

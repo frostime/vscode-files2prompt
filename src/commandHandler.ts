@@ -104,6 +104,40 @@ export function registerCommands(
     })
   );
 
+  // 注册命令 - 添加终端输出到 prompt 集合
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.addTerminalOutputToPrompt', async () => {
+      await promptManager.addTerminalOutput();
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+    })
+  );
+
+  // 注册命令 - 添加文件夹树结构到 prompt 集合
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.addFolderTreeToPrompt', async (uri?: vscode.Uri) => {
+      if (uri) {
+        await promptManager.addFolderTree(uri);
+      } else {
+        // 如果没有提供 URI，显示文件夹选择对话框
+        const uris = await vscode.window.showOpenDialog({
+          canSelectFiles: false,
+          canSelectFolders: true,
+          canSelectMany: false,
+          openLabel: '添加文件夹树结构'
+        });
+
+        if (uris && uris.length > 0) {
+          await promptManager.addFolderTree(uris[0]);
+        }
+      }
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+    })
+  );
+
   // 注册命令 - 清空 prompt 集合
   context.subscriptions.push(
     vscode.commands.registerCommand('assemble-code-to-prompt.clearPromptItems', () => {
@@ -114,10 +148,7 @@ export function registerCommands(
   // 注册命令 - 生成最终的 prompt
   context.subscriptions.push(
     vscode.commands.registerCommand('assemble-code-to-prompt.generatePrompt', async () => {
-      const config = vscode.workspace.getConfiguration('CodeToPrompt');
-      const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
-
-      const prompt = promptManager.generatePrompt(sortOrder);
+      const prompt = promptManager.generatePrompt('openingOrder');
 
       // 创建并显示新文档
       const newDocument = await vscode.workspace.openTextDocument({
@@ -131,7 +162,7 @@ export function registerCommands(
 
   // 注册命令 - 一键合并所有打开的文件
   context.subscriptions.push(
-    vscode.commands.registerCommand('assemble-code-to-prompt.openedFiles', async () => {
+    vscode.commands.registerCommand('assemble-code-to-prompt.addOpenedFilesToPrompt', async () => {
       try {
         // 获取所有打开的文档（包括所有标签页）
         const openDocuments = vscode.workspace.textDocuments;
@@ -140,9 +171,6 @@ export function registerCommands(
           vscode.window.showInformationMessage('没有打开的文件可以合并');
           return;
         }
-
-        // 清空当前 PromptManager 中的所有项目
-        promptManager.clear();
 
         // 将所有打开的文件添加到 PromptManager
         for (const document of openDocuments) {
@@ -159,21 +187,18 @@ export function registerCommands(
         // 显示 TreeView
         vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
 
-        // 生成 prompt
-        const config = vscode.workspace.getConfiguration('CodeToPrompt');
-        const sortOrder = config.get<'openingOrder' | 'filePath'>('sortOrder', 'openingOrder');
+        // // 生成 prompt
+        // const prompt = promptManager.generatePrompt('openingOrder');
 
-        const prompt = promptManager.generatePrompt(sortOrder);
+        // // 创建并显示新文档
+        // const newDocument = await vscode.workspace.openTextDocument({
+        //   content: prompt,
+        //   language: 'markdown'
+        // });
 
-        // 创建并显示新文档
-        const newDocument = await vscode.workspace.openTextDocument({
-          content: prompt,
-          language: 'markdown'
-        });
+        // await vscode.window.showTextDocument(newDocument, { preview: false });
 
-        await vscode.window.showTextDocument(newDocument, { preview: false });
-
-        vscode.window.showInformationMessage(`已将 ${promptManager.getItems().length} 个文件添加到 Prompt 集合并生成 Prompt`);
+        // vscode.window.showInformationMessage(`已将 ${promptManager.getItems().length} 个文件添加到 Prompt 集合并生成 Prompt`);
       } catch (error) {
         vscode.window.showErrorMessage(`合并文件失败: ${error instanceof Error ? error.message : String(error)}`);
       }

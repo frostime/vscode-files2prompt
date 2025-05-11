@@ -1,12 +1,17 @@
 # Code to Prompt
 
-VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的 Prompt，方便复制到 GPT 等 AI 工具中。
+VS Code 扩展，用于将代码、终端输出和文件夹结构快速合并为格式化的 Prompt，方便复制到 GPT 等 AI 工具中。
 
 ## 主要功能
 
 - **一键合并模式**：将所有打开的文件一次性合并为 Prompt
-  - **增量构建模式**：逐步添加文件和代码片段到集合，然后生成 Prompt
-  - **支持目录**：可以添加整个目录下的所有文件
+- **增量构建模式**：逐步添加内容到集合，然后生成 Prompt
+- **支持多种内容类型**：
+  - 代码文件
+  - 代码片段
+  - 终端输出
+  - 文件夹树结构
+- **支持目录**：可以添加整个目录下的所有文件
 
 ## 使用方法
 
@@ -18,42 +23,65 @@ VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的
 ### 增量构建模式
 
 1. 通过以下方式添加内容到 Prompt 集合：
-   - 在文件资源管理器中右键文件/目录，选择 "添加文件到 Prompt 集合"
-   - 选中代码后右键，选择 "添加选中内容到 Prompt 集合"
+   - **添加代码文件**：在文件资源管理器中右键文件/目录，选择 "添加文件到 Prompt 集合"
+   - **添加代码片段**：选中代码后右键，选择 "添加选中内容到 Prompt 集合"
+   - **添加终端输出**：在终端窗口中右键，选择 "添加终端输出到 Prompt 集合"（会自动获取终端历史记录）
+   - **添加文件夹树结构**：在文件资源管理器中右键文件夹，选择 "添加文件夹树结构到 Prompt 集合"
 2. 在左侧活动栏的 "Prompt 集合" 面板中查看已添加的项目
 3. 点击面板顶部的 "生成 Prompt" 按钮生成最终 Prompt
 
-## 配置选项
+## Prompt 格式
 
-在 VS Code 设置中可以自定义以下选项：
+生成的 Prompt 将按以下顺序组织内容：
 
-- `CodeToPrompt.fileTemplate`：每个文件的模板格式
-- `CodeToPrompt.baseTemplate`：整体 Prompt 的模板格式
-- `CodeToPrompt.sortOrder`：文件排序方式（按添加顺序或文件路径）
+1. **终端输出**（如果有）
+2. **文件夹树结构**（如果有）
+3. **代码文件和代码片段**
 
 ## 示例输出
 
-> ### Codes
+> ### Terminal Output ###
+>
+> Terminal: PowerShell
+> ```
+> PS> node -v
+> v20.11.1
+> ```
+>
+> ### Folder Structure ###
+>
+> Tree: src
+> ```
+> src/
+> ├── extension.ts
+> ├── promptManager.ts
+> ├── promptTreeProvider.ts
+> ├── commandHandler.ts
+> └── statusBarController.ts
+> ```
+>
+> ### Code ###
 >
 > Outlines:
 >
-> * package.json (snippet)
-> * tsconfig.json
+> - package.json (snippet)
+> - tsconfig.json
 >
 > Content:
 >
-> ```package.json
+> 文件: package.json (lines 1-20)
+> ```json
 >   "name": "assemble-code-to-prompt",
 >   "displayName": "Code to Prompt",
 >   "author": {
 >     "name": "frostime"
 >   },
->   "description": "快速将你项目中的代码合并成一个 Prompt，方便你复制给 GPT",
+>   "description": "快速将代码、终端输出和文件夹结构合并成一个 Prompt，方便你复制给 GPT",
 >   "repository": {
 >     "type": "git",
 >     "url": "https://github.com/frostime/vscode-files2prompt"
 >   },
->   "version": "1.0.1",
+>   "version": "1.1.1",
 >   "engines": {
 >     "vscode": "^1.95.0"
 >   },
@@ -62,7 +90,8 @@ VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的
 >   ],
 > ```
 >
-> ```tsconfig.json
+> 文件: tsconfig.json
+> ```json
 > {
 >   "compilerOptions": {
 >     "module": "Node16",
@@ -73,11 +102,7 @@ VS Code 扩展，用于将代码文件和代码片段快速合并为格式化的
 >     ],
 >     "sourceMap": true,
 >     "rootDir": "src",
->     "strict": true,   /* enable all strict type-checking options */
->     /* Additional Checks */
->     // "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
->     // "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
->     // "noUnusedParameters": true,  /* Report errors on unused parameters. */
+>     "strict": true
 >   }
 > }
 > ```

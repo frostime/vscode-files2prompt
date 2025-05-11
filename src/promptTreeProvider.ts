@@ -70,22 +70,28 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
     treeItem.description = element.description;
     treeItem.id = element.id;
 
-    // 设置图标
-    if (element.item.type === 'file') {
-      treeItem.iconPath = new vscode.ThemeIcon('file');
-    } else {
-      treeItem.iconPath = new vscode.ThemeIcon('code');
+    // 设置图标和工具提示
+    switch (element.item.type) {
+      case 'file':
+        treeItem.iconPath = new vscode.ThemeIcon('file');
+        treeItem.tooltip = `文件: ${element.item.filePath}`;
+        break;
+      case 'snippet':
+        treeItem.iconPath = new vscode.ThemeIcon('code');
+        treeItem.tooltip = `代码片段: ${element.item.filePath} (lines ${element.item.lineStart}-${element.item.lineEnd})`;
+        break;
+      case 'terminal':
+        treeItem.iconPath = new vscode.ThemeIcon('terminal');
+        treeItem.tooltip = `终端输出: ${element.item.title}`;
+        break;
+      case 'tree':
+        treeItem.iconPath = new vscode.ThemeIcon('list-tree');
+        treeItem.tooltip = `文件夹树结构: ${element.item.filePath}`;
+        break;
     }
 
     // 设置上下文
     treeItem.contextValue = element.item.type;
-
-    // 设置工具提示
-    if (element.item.type === 'file') {
-      treeItem.tooltip = `文件: ${element.item.filePath}`;
-    } else {
-      treeItem.tooltip = `代码片段: ${element.item.filePath} (lines ${element.item.lineStart}-${element.item.lineEnd})`;
-    }
 
     return treeItem;
   }
@@ -100,12 +106,23 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
           let label = '';
           let description = '';
 
-          if (item.type === 'file') {
-            label = path.basename(item.filePath || '');
-            description = item.filePath || '';
-          } else {
-            label = item.title;
-            description = `Lines ${item.lineStart}-${item.lineEnd}`;
+          switch (item.type) {
+            case 'file':
+              label = path.basename(item.filePath || '');
+              description = item.filePath || '';
+              break;
+            case 'snippet':
+              label = item.title || path.basename(item.filePath || '');
+              description = `Lines ${item.lineStart}-${item.lineEnd}`;
+              break;
+            case 'terminal':
+              label = item.title;
+              description = '终端输出';
+              break;
+            case 'tree':
+              label = item.title;
+              description = item.filePath || '';
+              break;
           }
 
           return new PromptItemNode(
