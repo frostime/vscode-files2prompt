@@ -4,12 +4,13 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
 
 // 表示添加到 prompt 集合中的单个项目
 export interface PromptItem {
   id: string;                    // 唯一标识符
-  type: 'file' | 'snippet' | 'terminal' | 'tree';  // 类型：文件、代码片段、终端输出或文件夹树
+  type: 'file' | 'snippet' | 'terminal' | 'tree' | 'git-diff';  // 类型：文件、代码片段、终端输出、文件夹树或Git差异
   title: string;                 // 标题或描述
   content: string;               // 内容
   filePath?: string;             // 文件路径（如果适用）
@@ -406,6 +407,137 @@ export class PromptManager {
     return [...this.items];
   }
 
+  // 添加全局 git diff --cached
+  async addGitDiffCached(): Promise<void> {
+    try {
+      // 获取工作区根目录
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        vscode.window.showWarningMessage('没有打开的工作区');
+        return;
+      }
+
+      const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+
+      // 创建临时文件路径
+      const tempFilePath = path.join(os.tmpdir(), `git-diff-cached-${Date.now()}.txt`);
+
+      // 执行 git diff --cached 命令并重定向到临时文件
+      const { error, stdout, stderr } = await new Promise<{ error: Error | null, stdout: string, stderr: string }>(resolve => {
+        const process = require('child_process').exec(
+          `git -C "${workspaceRoot}" diff --cached > "${tempFilePath}"`,
+          (error: Error | null, stdout: string, stderr: string) => {
+            resolve({ error, stdout, stderr });
+          }
+        );
+      });
+
+      if (error) {
+        vscode.window.showErrorMessage(`执行 git diff 命令失败: ${stderr || error.message}`);
+        return;
+      }
+
+      // 读取临时文件内容
+      let output = '';
+      try {
+        output = await fs.promises.readFile(tempFilePath, 'utf8');
+        // 清理临时文件
+        await fs.promises.unlink(tempFilePath);
+      } catch (readError) {
+        vscode.window.showErrorMessage(`读取 git diff 输出失败: ${readError instanceof Error ? readError.message : String(readError)}`);
+        return;
+      }
+
+      if (!output || !output.trim()) {
+        vscode.window.showInformationMessage('没有已暂存的更改');
+        return;
+      }
+
+      // 创建并添加 git diff 项目
+      const item: PromptItem = {
+        id: uuidv4(),
+        type: 'git-diff',
+        title: 'Git Diff (--cached)',
+        content: output,
+        index: this.items.length
+      };
+
+      this.items.push(item);
+      this._onDidChangeItems.fire();
+
+      vscode.window.setStatusBarMessage('已添加全局 Git Diff (--cached)', 3000);
+    } catch (error) {
+      vscode.window.showErrorMessage(`添加 Git Diff 失败: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  // 添加文件级别的 git diff --cached
+  async addGitDiffFile(uri: vscode.Uri): Promise<void> {
+    try {
+      const filePath = uri.fsPath;
+      const fileName = path.basename(filePath);
+      const relativePath = this.getRelativePath(uri);
+
+      // 获取工作区根目录
+      if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+        vscode.window.showWarningMessage('没有打开的工作区');
+        return;
+      }
+
+      const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+
+      // 创建临时文件路径
+      const tempFilePath = path.join(os.tmpdir(), `git-diff-file-${Date.now()}.txt`);
+
+      // 执行 git diff --cached 命令并重定向到临时文件
+      const { error, stdout, stderr } = await new Promise<{ error: Error | null, stdout: string, stderr: string }>(resolve => {
+        const process = require('child_process').exec(
+          `git -C "${workspaceRoot}" diff --cached -- "${relativePath}" > "${tempFilePath}"`,
+          (error: Error | null, stdout: string, stderr: string) => {
+            resolve({ error, stdout, stderr });
+          }
+        );
+      });
+
+      if (error) {
+        vscode.window.showErrorMessage(`执行 git diff 命令失败: ${stderr || error.message}`);
+        return;
+      }
+
+      // 读取临时文件内容
+      let output = '';
+      try {
+        output = await fs.promises.readFile(tempFilePath, 'utf8');
+        // 清理临时文件
+        await fs.promises.unlink(tempFilePath);
+      } catch (readError) {
+        vscode.window.showErrorMessage(`读取 git diff 输出失败: ${readError instanceof Error ? readError.message : String(readError)}`);
+        return;
+      }
+
+      if (!output || !output.trim()) {
+        vscode.window.showInformationMessage(`文件 ${fileName} 没有已暂存的更改`);
+        return;
+      }
+
+      // 创建并添加 git diff 项目
+      const item: PromptItem = {
+        id: uuidv4(),
+        type: 'git-diff',
+        title: `Git Diff: ${fileName}`,
+        content: output,
+        filePath: relativePath,
+        index: this.items.length
+      };
+
+      this.items.push(item);
+      this._onDidChangeItems.fire();
+
+      vscode.window.setStatusBarMessage(`已添加文件 Git Diff: ${fileName}`, 3000);
+    } catch (error) {
+      vscode.window.showErrorMessage(`添加文件 Git Diff 失败: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
   // 生成最终的 prompt
   generatePrompt(sortOrder: 'openingOrder' | 'filePath' = 'openingOrder'): string {
     if (this.items.length === 0) {
@@ -416,6 +548,7 @@ export class PromptManager {
     const fileItems = this.items.filter(item => item.type === 'file' || item.type === 'snippet');
     const terminalItems = this.items.filter(item => item.type === 'terminal');
     const treeItems = this.items.filter(item => item.type === 'tree');
+    const gitDiffItems = this.items.filter(item => item.type === 'git-diff');
 
     let finalPrompt = '';
 
@@ -435,7 +568,15 @@ export class PromptManager {
       }
     }
 
-    // 3. 处理代码项目
+    // 3. 添加 Git Diff 部分
+    if (gitDiffItems.length > 0) {
+      finalPrompt += `### Git Diff (--cached) ###\n\n`;
+      for (const item of gitDiffItems) {
+        finalPrompt += `${item.title}\n\`\`\`diff\n${item.content}\n\`\`\`\n\n`;
+      }
+    }
+
+    // 4. 处理代码项目
     if (fileItems.length > 0) {
       let codePrompts: { path: string, prompt: string, index: number }[] = [];
 

@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "2.0.0",
+  "version": "2.1.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -62,6 +62,18 @@
         "title": "添加文件夹树结构到 Prompt 集合",
         "category": "Prompt",
         "icon": "$(list-tree)"
+      },
+      {
+        "command": "assemble-code-to-prompt.addGitDiffCachedToPrompt",
+        "title": "添加全局 Git Diff (--cached) 到 Prompt 集合",
+        "category": "Prompt",
+        "icon": "$(git-compare)"
+      },
+      {
+        "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
+        "title": "添加文件 Git Diff (--cached) 到 Prompt 集合",
+        "category": "Prompt",
+        "icon": "$(git-compare)"
       },
       {
         "command": "assemble-code-to-prompt.removeItemFromPrompt",
@@ -126,6 +138,10 @@
           "command": "assemble-code-to-prompt.addSelectionToPrompt",
           "when": "editorHasSelection",
           "group": "prompt@2"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
+          "group": "prompt@3"
         }
       ],
       "terminal/context": [
@@ -138,6 +154,10 @@
         {
           "command": "assemble-code-to-prompt.addFileToPrompt",
           "group": "prompt@1"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
+          "group": "prompt@2"
         }
       ],
       "explorer/context": [
@@ -150,6 +170,16 @@
           "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
           "group": "prompt@2",
           "when": "explorerResourceIsFolder || explorerResourceIsRoot"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffCachedToPrompt",
+          "group": "prompt@3",
+          "when": "explorerResourceIsRoot"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
+          "group": "prompt@4",
+          "when": "!explorerResourceIsFolder && resourceExtname"
         }
       ],
       "view/title": [
@@ -206,6 +236,14 @@
         {
           "command": "assemble-code-to-prompt.addFolderTreeToPrompt",
           "group": "1_add@5"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffCachedToPrompt",
+          "group": "1_add@6"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
+          "group": "1_add@7"
         }
       ],
       "commandPalette": [
@@ -223,6 +261,12 @@
         },
         {
           "command": "assemble-code-to-prompt.addFolderTreeToPrompt"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffCachedToPrompt"
+        },
+        {
+          "command": "assemble-code-to-prompt.addGitDiffFileToPrompt"
         },
         {
           "command": "assemble-code-to-prompt.addFileToPrompt",

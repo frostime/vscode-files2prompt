@@ -88,6 +88,12 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
         treeItem.iconPath = new vscode.ThemeIcon('list-tree');
         treeItem.tooltip = `文件夹树结构: ${element.item.filePath}`;
         break;
+      case 'git-diff':
+        treeItem.iconPath = new vscode.ThemeIcon('git-compare');
+        treeItem.tooltip = element.item.filePath
+          ? `Git Diff: ${element.item.filePath}`
+          : `全局 Git Diff`;
+        break;
     }
 
     // 设置上下文
@@ -122,6 +128,10 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
             case 'tree':
               label = item.title;
               description = item.filePath || '';
+              break;
+            case 'git-diff':
+              label = item.title;
+              description = item.filePath ? item.filePath : 'Git Diff';
               break;
           }
 

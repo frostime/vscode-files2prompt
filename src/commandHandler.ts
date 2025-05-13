@@ -160,6 +160,43 @@ export function registerCommands(
     })
   );
 
+  // 注册命令 - 添加全局 git diff --cached 到 prompt 集合
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.addGitDiffCachedToPrompt', async () => {
+      await promptManager.addGitDiffCached();
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+    })
+  );
+
+  // 注册命令 - 添加文件级别的 git diff --cached 到 prompt 集合
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.addGitDiffFileToPrompt', async (uri?: vscode.Uri) => {
+      if (uri) {
+        await promptManager.addGitDiffFile(uri);
+      } else {
+        // 检查是否从编辑器标签页调用
+        const activeEditor = vscode.window.activeTextEditor;
+        if (activeEditor && activeEditor.document.uri.scheme === 'file') {
+          await promptManager.addGitDiffFile(activeEditor.document.uri);
+        } else {
+          // 如果没有活动编辑器或不是文件，显示文件选择对话框
+          const uris = await vscode.window.showOpenDialog({
+            canSelectMany: false,
+            openLabel: '添加文件 Git Diff'
+          });
+          if (uris && uris.length > 0) {
+            await promptManager.addGitDiffFile(uris[0]);
+          }
+        }
+      }
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+    })
+  );
+
   // 注册命令 - 一键合并所有打开的文件
   context.subscriptions.push(
     vscode.commands.registerCommand('assemble-code-to-prompt.addOpenedFilesToPrompt', async () => {
