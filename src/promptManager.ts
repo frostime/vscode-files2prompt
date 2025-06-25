@@ -12,12 +12,13 @@ export interface PromptItem {
   id: string;                    // 唯一标识符
   type: 'file' | 'snippet' | 'terminal' | 'tree' | 'git-diff';  // 类型：文件、代码片段、终端输出、文件夹树或Git差异
   title: string;                 // 标题或描述
-  content: string;               // 内容
+  content: string | (() => Promise<string>);               // 内容
   filePath?: string;             // 文件路径（如果适用）
   language?: string;             // 语言（用于语法高亮）
   lineStart?: number;            // 代码片段的起始行（如果适用）
   lineEnd?: number;              // 代码片段的结束行（如果适用）
   index: number;                 // 用于排序
+  mode: 'static' | 'dynamic';    // 静态或动态
 }
 
 export class PromptManager {
@@ -25,7 +26,126 @@ export class PromptManager {
   private _onDidChangeItems = new vscode.EventEmitter<void>();
   readonly onDidChangeItems = this._onDidChangeItems.event;
 
-  constructor() {}
+  constructor() { }
+
+  // 动态内容生成函数
+  private createDynamicFileContentGenerator(uri: vscode.Uri): () => Promise<string> {
+    return async () => {
+      try {
+        const document = await vscode.workspace.openTextDocument(uri);
+        return document.getText();
+      } catch (error) {
+        throw new Error(`无法读取文件: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
+  }
+
+  private createDynamicTreeContentGenerator(uri: vscode.Uri): () => Promise<string> {
+    return async () => {
+      try {
+        return await this.generateFolderTree(uri);
+      } catch (error) {
+        throw new Error(`无法生成目录树: ${error instanceof Error ? error.message : String(error)}`);
+      }
+    };
+  }
+
+  private createDynamicGitDiffContentGenerator(uri?: vscode.Uri): () => Promise<string> {
+    return async () => {
+      try {
+        // 获取 Git 扩展
+        const gitExtension = vscode.extensions.getExtension('vscode.git')?.exports;
+        if (!gitExtension) {
+          return '错误: Git 扩展未启用';
+        }
+
+        const git = gitExtension.getAPI(1);
+        if (!git) {
+          return '错误: 无法获取 Git API';
+        }
+
+        // 获取工作区根目录
+        if (!vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length === 0) {
+          return '错误: 没有打开的工作区';
+        }
+
+        const workspaceRoot = vscode.workspace.workspaceFolders[0].uri.fsPath;
+
+        // 查找对应的 Git 仓库
+        const repository = git.repositories.find((repo: any) =>
+          workspaceRoot.startsWith(repo.rootUri.fsPath)
+        );
+
+        if (!repository) {
+          return '错误: 当前目录不是 Git 仓库';
+        }
+
+        // 获取暂存区的更改
+        const indexChanges = repository.state.indexChanges;
+
+        if (!indexChanges || indexChanges.length === 0) {
+          return '没有暂存的更改';
+        }
+
+        let diffContent = '';
+
+        // 如果指定了特定文件
+        if (uri) {
+          const relativePath = this.getRelativePath(uri);
+          const targetChange = indexChanges.find((change: any) =>
+            change.uri.fsPath === uri.fsPath
+          );
+
+          if (!targetChange) {
+            return `文件 ${relativePath} 没有暂存的更改`;
+          }
+
+          // 获取单个文件的 diff
+          try {
+            const diff = await repository.diffIndexWith('HEAD', targetChange.uri.fsPath);
+            diffContent = diff || '无法获取文件差异';
+          } catch (error) {
+            diffContent = `获取文件差异失败: ${error instanceof Error ? error.message : String(error)}`;
+          }
+        } else {
+          // 获取所有暂存文件的信息
+          diffContent = '暂存的更改:\n\n';
+
+          for (const change of indexChanges) {
+            const relativePath = vscode.workspace.asRelativePath(change.uri);
+            let status = '';
+
+            switch (change.status) {
+              case 0: status = 'INDEX_MODIFIED'; break;
+              case 1: status = 'INDEX_ADDED'; break;
+              case 2: status = 'INDEX_DELETED'; break;
+              case 3: status = 'INDEX_RENAMED'; break;
+              case 4: status = 'INDEX_COPIED'; break;
+              default: status = 'UNKNOWN';
+            }
+
+            diffContent += `${status}: ${relativePath}\n`;
+
+            // 尝试获取每个文件的 diff（可选，可能影响性能）
+            try {
+              const fileDiff = await repository.diffIndexWith('HEAD', change.uri.fsPath);
+              if (fileDiff) {
+                diffContent += `\n${fileDiff}\n${'='.repeat(50)}\n`;
+              }
+            } catch (error) {
+              diffContent += `  (无法获取详细差异: ${error instanceof Error ? error.message : String(error)})\n`;
+            }
+          }
+        }
+
+        return diffContent || '没有可显示的差异内容';
+
+      } catch (error) {
+        console.error('Git diff 生成失败:', error);
+        return `[Error: 无法生成动态内容 - Git diff 生成失败: ${error instanceof Error ? error.message : String(error)}]`;
+      }
+    };
+  }
 
   // 添加文件或目录
   async addFile(uri: vscode.Uri): Promise<void> {
@@ -41,7 +161,6 @@ export class PromptManager {
 
       // 处理单个文件
       const document = await vscode.workspace.openTextDocument(uri);
-      const content = document.getText();
 
       // 获取相对路径
       const relativePath = this.getRelativePath(uri);
@@ -62,10 +181,11 @@ export class PromptManager {
         id: uuidv4(),
         type: 'file',
         title: fileName,
-        content: content,
+        content: this.createDynamicFileContentGenerator(uri),
         filePath: relativePath,
         language: document.languageId,
-        index: this.items.length
+        index: this.items.length,
+        mode: 'dynamic'
       };
 
       this.items.push(item);
@@ -106,17 +226,17 @@ export class PromptManager {
             if (!existingItem) {
               // 尝试添加文件，但不显示每个文件的消息
               const document = await vscode.workspace.openTextDocument(entryUri);
-              const content = document.getText();
               const fileName = path.basename(entryPath);
 
               const item: PromptItem = {
                 id: uuidv4(),
                 type: 'file',
                 title: fileName,
-                content: content,
+                content: this.createDynamicFileContentGenerator(entryUri),
                 filePath: relativePath,
                 language: document.languageId,
-                index: this.items.length
+                index: this.items.length,
+                mode: 'dynamic'
               };
 
               this.items.push(item);
@@ -178,7 +298,7 @@ export class PromptManager {
       );
 
       if (existingItem) {
-        vscode.window.setStatusBarMessage(`代码片段已存在: ${existingItem.title}`, 3000);
+        vscode.window.setStatusBarMessage(`代码片段已存在`, 3000);
         return;
       }
 
@@ -191,7 +311,8 @@ export class PromptManager {
         language: document.languageId,
         lineStart: lineStart,
         lineEnd: lineEnd,
-        index: this.items.length
+        index: this.items.length,
+        mode: 'static'
       };
 
       this.items.push(item);
@@ -236,7 +357,8 @@ export class PromptManager {
           type: 'terminal',
           title: `Terminal: ${terminalName}`,
           content: output,
-          index: this.items.length
+          index: this.items.length,
+          mode: 'static'
         };
 
         this.items.push(item);
@@ -262,7 +384,8 @@ export class PromptManager {
           type: 'terminal',
           title: `Terminal: ${terminalName}`,
           content: output,
-          index: this.items.length
+          index: this.items.length,
+          mode: 'static'
         };
 
         this.items.push(item);
@@ -296,9 +419,10 @@ export class PromptManager {
         id: uuidv4(),
         type: 'tree',
         title: `Tree: ${folderName}`,
-        content: treeContent,
+        content: this.createDynamicTreeContentGenerator(uri),
         filePath: relativePath,
-        index: this.items.length
+        index: this.items.length,
+        mode: 'dynamic'
       };
 
       this.items.push(item);
@@ -457,8 +581,9 @@ export class PromptManager {
         id: uuidv4(),
         type: 'git-diff',
         title: 'Git Diff (--cached)',
-        content: output,
-        index: this.items.length
+        content: this.createDynamicGitDiffContentGenerator(),
+        index: this.items.length,
+        mode: 'dynamic'
       };
 
       this.items.push(item);
@@ -524,9 +649,10 @@ export class PromptManager {
         id: uuidv4(),
         type: 'git-diff',
         title: `Git Diff: ${fileName}`,
-        content: output,
+        content: this.createDynamicGitDiffContentGenerator(uri),
         filePath: relativePath,
-        index: this.items.length
+        index: this.items.length,
+        mode: 'dynamic'
       };
 
       this.items.push(item);
@@ -538,8 +664,22 @@ export class PromptManager {
     }
   }
 
+  // 解析内容（静态或动态）
+  private async resolveContent(item: PromptItem): Promise<string> {
+    if (typeof item.content === 'string') {
+      return item.content;
+    } else {
+      try {
+        return await item.content();
+      } catch (error) {
+        console.error(`动态内容生成失败 (${item.title}):`, error);
+        return `[Error: 无法生成动态内容 - ${error instanceof Error ? error.message : String(error)}]`;
+      }
+    }
+  }
+
   // 生成最终的 prompt
-  generatePrompt(sortOrder: 'openingOrder' | 'filePath' = 'openingOrder'): string {
+  async generatePrompt(sortOrder: 'openingOrder' | 'filePath' = 'openingOrder'): Promise<string> {
     if (this.items.length === 0) {
       return '没有选择任何文件或代码片段';
     }
@@ -556,7 +696,8 @@ export class PromptManager {
     if (terminalItems.length > 0) {
       finalPrompt += `### Terminal Output ###\n\n`;
       for (const item of terminalItems) {
-        finalPrompt += `${item.title}\n\`\`\`\n${item.content}\n\`\`\`\n\n`;
+        const content = await this.resolveContent(item);
+        finalPrompt += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
       }
     }
 
@@ -564,7 +705,8 @@ export class PromptManager {
     if (treeItems.length > 0) {
       finalPrompt += `### Folder Structure ###\n\n`;
       for (const item of treeItems) {
-        finalPrompt += `${item.title}\n\`\`\`\n${item.content}\n\`\`\`\n\n`;
+        const content = await this.resolveContent(item);
+        finalPrompt += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
       }
     }
 
@@ -572,7 +714,8 @@ export class PromptManager {
     if (gitDiffItems.length > 0) {
       finalPrompt += `### Git Diff (--cached) ###\n\n`;
       for (const item of gitDiffItems) {
-        finalPrompt += `${item.title}\n\`\`\`diff\n${item.content}\n\`\`\`\n\n`;
+        const content = await this.resolveContent(item);
+        finalPrompt += `${item.title}\n\`\`\`diff\n${content}\n\`\`\`\n\n`;
       }
     }
 
@@ -581,15 +724,17 @@ export class PromptManager {
       let codePrompts: { path: string, prompt: string, index: number }[] = [];
 
       for (const item of fileItems) {
+        const content = await this.resolveContent(item);
+
         if (item.type === 'file') {
-          const fileContent = '```' + (item.language || '') + '\n' + item.content + '\n```';
+          const fileContent = '```' + (item.language || '') + '\n' + content + '\n```';
           codePrompts.push({
             path: item.filePath || '',
             prompt: `文件: ${item.filePath || ''}\n${fileContent}`,
             index: item.index
           });
         } else if (item.type === 'snippet') {
-          const snippetContent = '```' + (item.language || '') + '\n' + item.content + '\n```';
+          const snippetContent = '```' + (item.language || '') + '\n' + content + '\n```';
           codePrompts.push({
             path: `${item.filePath || ''} (lines ${item.lineStart}-${item.lineEnd})`,
             prompt: `代码片段: ${item.filePath || ''} (lines ${item.lineStart}-${item.lineEnd})\n${snippetContent}`,

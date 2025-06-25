@@ -12,7 +12,7 @@ export class PromptItemNode {
     public readonly label: string,
     public readonly description: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
-  ) {}
+  ) { }
 }
 
 export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNode>, vscode.TreeDragAndDropController<PromptItemNode> {
@@ -70,29 +70,38 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
     treeItem.description = element.description;
     treeItem.id = element.id;
 
-    // 设置图标和工具提示
+    // 根据项目类型和模式设置图标和工具提示
+    const isDynamic = element.item.mode === 'dynamic';
+
     switch (element.item.type) {
       case 'file':
-        treeItem.iconPath = new vscode.ThemeIcon('file');
-        treeItem.tooltip = `文件: ${element.item.filePath}`;
+        treeItem.iconPath = isDynamic
+          ? new vscode.ThemeIcon('file', new vscode.ThemeColor('charts.blue'))
+          : new vscode.ThemeIcon('file');
+        treeItem.tooltip = `文件: ${element.item.filePath}${isDynamic ? ' (动态)' : ' (静态)'}`;
         break;
       case 'snippet':
         treeItem.iconPath = new vscode.ThemeIcon('code');
-        treeItem.tooltip = `代码片段: ${element.item.filePath} (lines ${element.item.lineStart}-${element.item.lineEnd})`;
+        treeItem.tooltip = `代码片段: ${element.item.filePath} (lines ${element.item.lineStart}-${element.item.lineEnd}) (静态)`;
         break;
       case 'terminal':
         treeItem.iconPath = new vscode.ThemeIcon('terminal');
-        treeItem.tooltip = `终端输出: ${element.item.title}`;
+        treeItem.tooltip = `终端输出: ${element.item.title} (静态)`;
         break;
       case 'tree':
-        treeItem.iconPath = new vscode.ThemeIcon('list-tree');
-        treeItem.tooltip = `文件夹树结构: ${element.item.filePath}`;
+        treeItem.iconPath = isDynamic
+          ? new vscode.ThemeIcon('list-tree', new vscode.ThemeColor('charts.green'))
+          : new vscode.ThemeIcon('list-tree');
+        treeItem.tooltip = `文件夹树结构: ${element.item.filePath}${isDynamic ? ' (动态)' : ' (静态)'}`;
         break;
       case 'git-diff':
-        treeItem.iconPath = new vscode.ThemeIcon('git-compare');
-        treeItem.tooltip = element.item.filePath
+        treeItem.iconPath = isDynamic
+          ? new vscode.ThemeIcon('git-compare', new vscode.ThemeColor('charts.orange'))
+          : new vscode.ThemeIcon('git-compare');
+        const baseTooltip = element.item.filePath
           ? `Git Diff: ${element.item.filePath}`
           : `全局 Git Diff`;
+        treeItem.tooltip = `${baseTooltip}${isDynamic ? ' (动态)' : ' (静态)'}`;
         break;
     }
 

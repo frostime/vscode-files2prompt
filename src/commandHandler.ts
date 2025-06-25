@@ -148,7 +148,7 @@ export function registerCommands(
   // 注册命令 - 生成最终的 prompt
   context.subscriptions.push(
     vscode.commands.registerCommand('assemble-code-to-prompt.generatePrompt', async () => {
-      const prompt = promptManager.generatePrompt('openingOrder');
+      const prompt = await promptManager.generatePrompt('openingOrder');
 
       // 创建并显示新文档
       const newDocument = await vscode.workspace.openTextDocument({

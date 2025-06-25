@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "2.1.0",
+  "version": "2.2.0",
   "engines": {
     "vscode": "^1.95.0"
   },
