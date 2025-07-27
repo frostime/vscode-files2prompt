@@ -835,4 +835,44 @@ export class PromptManager {
 
     return finalPrompt.trim();
   }
+
+  // 编辑静态项目的内容
+  async editStaticItem(itemId: string): Promise<void> {
+    const item = this.items.find(i => i.id === itemId);
+    if (!item) {
+      vscode.window.showErrorMessage('未找到指定的项目');
+      return;
+    }
+
+    // 只允许编辑静态项目
+    if (item.mode !== 'static') {
+      vscode.window.showErrorMessage('只能编辑静态模式的项目');
+      return;
+    }
+
+    try {
+      // 获取当前内容
+      const currentContent = await this.resolveContent(item);
+      
+      // 显示编辑对话框
+      const newContent = await MultilineInputDialog.show({
+        title: `编辑 ${item.title}`,
+        description: `编辑 ${item.type} 的内容`,
+        placeholder: '请输入新的内容...',
+        initialValue: currentContent,
+        maxLength: 50000,
+        submitButtonText: '保存',
+        cancelButtonText: '取消'
+      });
+
+      if (newContent !== undefined && newContent !== currentContent) {
+        // 更新项目内容
+        item.content = newContent;
+        this._onDidChangeItems.fire();
+        vscode.window.showInformationMessage('项目内容已更新');
+      }
+    } catch (error) {
+      vscode.window.showErrorMessage(`编辑失败: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
 }

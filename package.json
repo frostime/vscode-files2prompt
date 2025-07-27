@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "2.3.0",
+  "version": "3.0.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -80,6 +80,12 @@
         "title": "添加用户指令到 Prompt 集合",
         "category": "Prompt",
         "icon": "$(comment)"
+      },
+      {
+        "command": "assemble-code-to-prompt.editStaticPromptItem",
+        "title": "编辑内容",
+        "category": "Prompt",
+        "icon": "$(edit)"
       },
       {
         "command": "assemble-code-to-prompt.removeItemFromPrompt",
@@ -206,6 +212,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "assemble-code-to-prompt.editStaticPromptItem",
+          "when": "view == promptItemsView && viewItem =~ /.*-static$/",
+          "group": "inline@0"
+        },
         {
           "command": "assemble-code-to-prompt.removeItemFromPrompt",
           "when": "view == promptItemsView",

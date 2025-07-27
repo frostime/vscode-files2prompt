@@ -103,15 +103,15 @@ export class MultilineInputDialog {
         <title>${title}</title>
         <style>
           body {
-            font-family: var(--vscode-font-family);
-            font-size: var(--vscode-font-size);
+            font-family: var(--vscode-editor-font-family);
+            font-size: var(--vscode-editor-font-size);
             color: var(--vscode-foreground);
             background-color: var(--vscode-editor-background);
             padding: 20px;
             margin: 0;
           }
           .container {
-            max-width: 600px;
+            max-width: 800px;
             margin: 0 auto;
           }
           h2 {
@@ -131,8 +131,8 @@ export class MultilineInputDialog {
             border: 1px solid var(--vscode-input-border);
             background-color: var(--vscode-input-background);
             color: var(--vscode-input-foreground);
-            font-family: var(--vscode-font-family);
-            font-size: var(--vscode-font-size);
+            font-family: var(--vscode-editor-font-family);
+            font-size: var(--vscode-editor-font-size);
             resize: vertical;
             box-sizing: border-box;
             border-radius: 2px;

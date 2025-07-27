@@ -252,4 +252,14 @@ export function registerCommands(
     })
   );
 
+  // 注册命令 - 编辑静态项目内容
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.editStaticPromptItem', async (node: PromptItemNode) => {
+      if (node && node.item) {
+        await promptManager.editStaticItem(node.item.id);
+      } else {
+        vscode.window.showErrorMessage('无法获取项目信息');
+      }
+    })
+  );
 }
