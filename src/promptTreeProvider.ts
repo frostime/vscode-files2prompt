@@ -103,6 +103,10 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
           : `全局 Git Diff`;
         treeItem.tooltip = `${baseTooltip}${isDynamic ? ' (动态)' : ' (静态)'}`;
         break;
+      case 'user-instruction':
+        treeItem.iconPath = new vscode.ThemeIcon('comment', new vscode.ThemeColor('charts.purple'));
+        treeItem.tooltip = `用户指令: ${element.item.title} (静态)`;
+        break;
     }
 
     // 设置上下文
@@ -141,6 +145,10 @@ export class PromptTreeProvider implements vscode.TreeDataProvider<PromptItemNod
             case 'git-diff':
               label = item.title;
               description = item.filePath ? item.filePath : 'Git Diff';
+              break;
+            case 'user-instruction':
+              label = item.title;
+              description = '用户指令';
               break;
           }
 

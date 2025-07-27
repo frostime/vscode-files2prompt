@@ -242,4 +242,14 @@ export function registerCommands(
     })
   );
 
+  // 注册命令 - 添加用户指令到 prompt 集合
+  context.subscriptions.push(
+    vscode.commands.registerCommand('assemble-code-to-prompt.addUserInstructionToPrompt', async () => {
+      await promptManager.addUserInstruction();
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+    })
+  );
+
 }

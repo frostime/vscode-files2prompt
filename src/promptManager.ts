@@ -6,11 +6,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import * as os from 'os';
 import { v4 as uuidv4 } from 'uuid';
+import { MultilineInputDialog } from './utils/multilineInputDialog';
 
 // 表示添加到 prompt 集合中的单个项目
 export interface PromptItem {
   id: string;                    // 唯一标识符
-  type: 'file' | 'snippet' | 'terminal' | 'tree' | 'git-diff';  // 类型：文件、代码片段、终端输出、文件夹树或Git差异
+  type: 'file' | 'snippet' | 'terminal' | 'tree' | 'git-diff' | 'user-instruction';  // 类型：文件、代码片段、终端输出、文件夹树、Git差异或用户指令
   title: string;                 // 标题或描述
   content: string | (() => Promise<string>);               // 内容
   filePath?: string;             // 文件路径（如果适用）
@@ -398,6 +399,70 @@ export class PromptManager {
     }
   }
 
+  // 添加用户指令
+  async addUserInstruction(): Promise<void> {
+    try {
+      // 使用封装的多行输入对话框
+      const instruction = await MultilineInputDialog.show({
+        title: '添加用户指令',
+        description: '请输入您的用户指令。支持多行文本，可以包含复杂的要求和说明。',
+        placeholder: '例如：请帮我分析这段代码的性能问题，并给出优化建议...',
+        maxLength: 5000,
+        submitButtonText: '添加',
+        cancelButtonText: '取消'
+      });
+
+      // 用户取消输入
+      if (!instruction) {
+        return;
+      }
+
+      const trimmedInstruction = instruction.trim();
+      if (!trimmedInstruction) {
+        vscode.window.showWarningMessage('用户指令不能为空');
+        return;
+      }
+
+      // 检查是否已存在相同的用户指令
+      const existingItem = this.items.find(item =>
+        item.type === 'user-instruction' && item.content === trimmedInstruction
+      );
+
+      if (existingItem) {
+        vscode.window.setStatusBarMessage('相同的用户指令已存在', 3000);
+        return;
+      }
+
+      // 生成标题（取第一行或前50个字符）
+      const firstLine = trimmedInstruction.split('\n')[0].trim();
+      const title = firstLine.length > 50 ? firstLine.substring(0, 50) + '...' : firstLine;
+
+      const item: PromptItem = {
+        id: uuidv4(),
+        type: 'user-instruction',
+        title: title || '用户指令',
+        content: trimmedInstruction,
+        index: this.items.length,
+        mode: 'static'
+      };
+
+      this.items.push(item);
+      this._onDidChangeItems.fire();
+
+      vscode.window.setStatusBarMessage('已添加用户指令', 3000);
+
+      // 自动显示 Prompt 面板
+      vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+
+    } catch (error) {
+      vscode.window.showErrorMessage(`添加用户指令失败: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+
+
+
+
   // 添加文件夹树结构
   async addFolderTree(uri: vscode.Uri): Promise<void> {
     try {
@@ -689,10 +754,20 @@ export class PromptManager {
     const terminalItems = this.items.filter(item => item.type === 'terminal');
     const treeItems = this.items.filter(item => item.type === 'tree');
     const gitDiffItems = this.items.filter(item => item.type === 'git-diff');
+    const userInstructionItems = this.items.filter(item => item.type === 'user-instruction');
 
     let finalPrompt = '';
 
-    // 1. 添加终端输出部分
+    // 1. 添加用户指令部分（始终在最上方）
+    if (userInstructionItems.length > 0) {
+      finalPrompt += `### User Instructions ###\n\n`;
+      for (const item of userInstructionItems) {
+        const content = await this.resolveContent(item);
+        finalPrompt += `${content}\n\n`;
+      }
+    }
+
+    // 2. 添加终端输出部分
     if (terminalItems.length > 0) {
       finalPrompt += `### Terminal Output ###\n\n`;
       for (const item of terminalItems) {
@@ -701,7 +776,7 @@ export class PromptManager {
       }
     }
 
-    // 2. 添加文件夹结构部分
+    // 3. 添加文件夹结构部分
     if (treeItems.length > 0) {
       finalPrompt += `### Folder Structure ###\n\n`;
       for (const item of treeItems) {
@@ -710,7 +785,7 @@ export class PromptManager {
       }
     }
 
-    // 3. 添加 Git Diff 部分
+    // 4. 添加 Git Diff 部分
     if (gitDiffItems.length > 0) {
       finalPrompt += `### Git Diff (--cached) ###\n\n`;
       for (const item of gitDiffItems) {
@@ -719,7 +794,7 @@ export class PromptManager {
       }
     }
 
-    // 4. 处理代码项目
+    // 5. 处理代码项目
     if (fileItems.length > 0) {
       let codePrompts: { path: string, prompt: string, index: number }[] = [];
 

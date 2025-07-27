@@ -10,7 +10,7 @@
     "type": "git",
     "url": "https://github.com/frostime/vscode-files2prompt"
   },
-  "version": "2.2.0",
+  "version": "2.3.0",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -74,6 +74,12 @@
         "title": "添加文件 Git Diff (--cached) 到 Prompt 集合",
         "category": "Prompt",
         "icon": "$(git-compare)"
+      },
+      {
+        "command": "assemble-code-to-prompt.addUserInstructionToPrompt",
+        "title": "添加用户指令到 Prompt 集合",
+        "category": "Prompt",
+        "icon": "$(comment)"
       },
       {
         "command": "assemble-code-to-prompt.removeItemFromPrompt",
@@ -244,6 +250,10 @@
         {
           "command": "assemble-code-to-prompt.addGitDiffFileToPrompt",
           "group": "1_add@7"
+        },
+        {
+          "command": "assemble-code-to-prompt.addUserInstructionToPrompt",
+          "group": "1_add@8"
         }
       ],
       "commandPalette": [
@@ -267,6 +277,9 @@
         },
         {
           "command": "assemble-code-to-prompt.addGitDiffFileToPrompt"
+        },
+        {
+          "command": "assemble-code-to-prompt.addUserInstructionToPrompt"
         },
         {
           "command": "assemble-code-to-prompt.addFileToPrompt",
