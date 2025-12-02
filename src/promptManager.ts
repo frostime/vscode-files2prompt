@@ -802,14 +802,14 @@ export class PromptManager {
         const content = await this.resolveContent(item);
 
         if (item.type === 'file') {
-          const fileContent = '```' + (item.language || '') + '\n' + content + '\n```';
+          const fileContent = `<Content src="${item.filePath || ''}" lang="${item.language || ''}">\n${content}\n</Content>`;
           codePrompts.push({
             path: item.filePath || '',
             prompt: `文件: ${item.filePath || ''}\n${fileContent}`,
             index: item.index
           });
         } else if (item.type === 'snippet') {
-          const snippetContent = '```' + (item.language || '') + '\n' + content + '\n```';
+          const snippetContent = `<Content src="${item.filePath || ''} (lines ${item.lineStart}-${item.lineEnd})" lang="${item.language || ''}">\n${content}\n</Content>`;
           codePrompts.push({
             path: `${item.filePath || ''} (lines ${item.lineStart}-${item.lineEnd})`,
             prompt: `代码片段: ${item.filePath || ''} (lines ${item.lineStart}-${item.lineEnd})\n${snippetContent}`,
@@ -830,7 +830,7 @@ export class PromptManager {
       const mergedCodeContent = codePrompts.map(p => p.prompt).join('\n\n');
 
       // 添加代码部分
-      finalPrompt += `### Code ###\n\nOutlines:\n\n${filePathList}\n\nContent:\n\n${mergedCodeContent}\n\n`;
+      finalPrompt += `### Sources ###\n\nOutlines:\n\n${filePathList}\n\nContent:\n\n${mergedCodeContent}\n\n`;
     }
 
     return finalPrompt.trim();

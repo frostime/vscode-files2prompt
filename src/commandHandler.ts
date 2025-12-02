@@ -15,18 +15,22 @@ export function registerCommands(
 
   // 注册命令 - 添加文件到 prompt 集合
   context.subscriptions.push(
-    vscode.commands.registerCommand('assemble-code-to-prompt.addFileToPrompt', async (uriOrUris: vscode.Uri | vscode.Uri[]) => {
-      // 处理多个文件的情况
-      if (Array.isArray(uriOrUris)) {
-        for (const uri of uriOrUris) {
+    vscode.commands.registerCommand('assemble-code-to-prompt.addFileToPrompt', async (contextSelection: vscode.Uri, allSelections: vscode.Uri[]) => {
+      // 当从 explorer context menu 触发时:
+      // - contextSelection: 右键点击的文件 (单个 URI)
+      // - allSelections: 所有选中的文件 (URI 数组)
+      
+      // 处理从 explorer context menu 多选触发的情况
+      if (allSelections && allSelections.length > 0) {
+        for (const uri of allSelections) {
           await promptManager.addFile(uri);
         }
       }
       // 处理单个文件的情况
-      else if (uriOrUris) {
-        await promptManager.addFile(uriOrUris);
+      else if (contextSelection) {
+        await promptManager.addFile(contextSelection);
       }
-      // 处理没有参数的情况
+      // 处理没有参数的情况（从命令面板或其他地方触发）
       else {
         // 检查是否从编辑器标签页调用
         const activeEditor = vscode.window.activeTextEditor;
