@@ -28,7 +28,7 @@ import { MultilineInputDialog } from '../ui/MultilineInputDialog';
 export class CommandRegistry {
   private readonly pathService: PathService;
   private readonly promptGenerator: PromptGenerator;
-  
+
   // 内容提供者
   private readonly fileProvider: FileProvider;
   private readonly snippetProvider: SnippetProvider;
@@ -86,11 +86,11 @@ export class CommandRegistry {
    * 添加文件到 Prompt 集合
    */
   private async addFile(
-    contextSelection?: vscode.Uri, 
+    contextSelection?: vscode.Uri,
     allSelections?: vscode.Uri[]
   ): Promise<void> {
     const uris = await this.resolveFileUris(contextSelection, allSelections);
-    
+
     for (const uri of uris) {
       await this.addFileOrDirectory(uri);
     }
@@ -104,7 +104,7 @@ export class CommandRegistry {
   private async addFileOrDirectory(uri: vscode.Uri): Promise<void> {
     try {
       const stats = await fs.promises.stat(uri.fsPath);
-      
+
       if (stats.isDirectory()) {
         const items = await this.fileProvider.createFromDirectory(uri);
         for (const item of items) {
@@ -183,14 +183,14 @@ export class CommandRegistry {
    */
   private async addSelection(): Promise<void> {
     const editor = vscode.window.activeTextEditor;
-    
+
     if (!editor || editor.selection.isEmpty) {
       vscode.window.showWarningMessage('请先选择代码片段');
       return;
     }
 
     const item = await this.snippetProvider.create(
-      editor.document, 
+      editor.document,
       editor.selection
     );
 
@@ -282,7 +282,7 @@ export class CommandRegistry {
 
     const items = this.store.getAll();
     const index = items.findIndex(item => item.id === node.id);
-    
+
     if (index > 0) {
       this.store.reorder(index, index - 1);
     }
@@ -296,7 +296,7 @@ export class CommandRegistry {
 
     const items = this.store.getAll();
     const index = items.findIndex(item => item.id === node.id);
-    
+
     if (index < items.length - 1) {
       this.store.reorder(index, index + 1);
     }
@@ -335,7 +335,7 @@ export class CommandRegistry {
     }
 
     const item = node.item;
-    
+
     if (item.mode !== 'static') {
       vscode.window.showErrorMessage('只能编辑静态模式的项目');
       return;
@@ -369,8 +369,8 @@ export class CommandRegistry {
    * 编辑代码片段
    */
   private async editSnippet(item: SnippetPromptItem): Promise<SnippetPromptItem | undefined> {
-    const currentContent = typeof item.content === 'string' 
-      ? item.content 
+    const currentContent = typeof item.content === 'string'
+      ? item.content
       : await item.content();
 
     const newContent = await MultilineInputDialog.show({
@@ -409,7 +409,7 @@ export class CommandRegistry {
    */
   private async resolveActiveFileUri(): Promise<vscode.Uri | undefined> {
     const activeEditor = vscode.window.activeTextEditor;
-    
+
     if (activeEditor?.document.uri.scheme === 'file') {
       return activeEditor.document.uri;
     }

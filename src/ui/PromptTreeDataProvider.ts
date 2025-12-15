@@ -3,12 +3,12 @@
  */
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { 
-  PromptItem, 
-  FilePromptItem, 
-  SnippetPromptItem, 
-  TreePromptItem, 
-  GitDiffPromptItem 
+import {
+  PromptItem,
+  FilePromptItem,
+  SnippetPromptItem,
+  TreePromptItem,
+  GitDiffPromptItem
 } from '../types';
 import { PromptItemStore } from '../core/PromptItemStore';
 
@@ -22,7 +22,7 @@ export class PromptItemNode {
     public readonly label: string,
     public readonly description: string,
     public readonly collapsibleState: vscode.TreeItemCollapsibleState
-  ) {}
+  ) { }
 }
 
 /**
@@ -30,10 +30,10 @@ export class PromptItemNode {
  * 
  * 职责：为 TreeView 提供数据和拖放支持
  */
-export class PromptTreeDataProvider 
-  implements 
-    vscode.TreeDataProvider<PromptItemNode>, 
-    vscode.TreeDragAndDropController<PromptItemNode> {
+export class PromptTreeDataProvider
+  implements
+  vscode.TreeDataProvider<PromptItemNode>,
+  vscode.TreeDragAndDropController<PromptItemNode> {
 
   private readonly _onDidChangeTreeData = new vscode.EventEmitter<PromptItemNode | undefined>();
   readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
@@ -57,11 +57,11 @@ export class PromptTreeDataProvider
    * 处理拖拽开始
    */
   handleDrag(
-    source: readonly PromptItemNode[], 
+    source: readonly PromptItemNode[],
     dataTransfer: vscode.DataTransfer
   ): void {
     dataTransfer.set(
-      'application/vnd.code.tree.promptItemsView', 
+      'application/vnd.code.tree.promptItemsView',
       new vscode.DataTransferItem(source)
     );
   }
@@ -70,7 +70,7 @@ export class PromptTreeDataProvider
    * 处理放置
    */
   async handleDrop(
-    target: PromptItemNode | undefined, 
+    target: PromptItemNode | undefined,
     dataTransfer: vscode.DataTransfer
   ): Promise<void> {
     const transferItem = dataTransfer.get('application/vnd.code.tree.promptItemsView');
@@ -81,8 +81,8 @@ export class PromptTreeDataProvider
 
     const items = this.store.getAll();
     const sourceIndex = items.findIndex(item => item.id === sources[0].id);
-    let targetIndex = target 
-      ? items.findIndex(item => item.id === target.id) 
+    let targetIndex = target
+      ? items.findIndex(item => item.id === target.id)
       : items.length;
 
     // 如果源在目标之前，需要调整目标索引
@@ -130,7 +130,7 @@ export class PromptTreeDataProvider
    */
   private createNode(item: PromptItem): PromptItemNode {
     const { label, description } = this.getItemLabelAndDescription(item);
-    
+
     return new PromptItemNode(
       item,
       item.id,
@@ -191,9 +191,9 @@ export class PromptTreeDataProvider
   /**
    * 获取项目的图标和工具提示
    */
-  private getItemVisuals(item: PromptItem): { 
-    iconPath: vscode.ThemeIcon; 
-    tooltip: string 
+  private getItemVisuals(item: PromptItem): {
+    iconPath: vscode.ThemeIcon;
+    tooltip: string
   } {
     const isDynamic = item.mode === 'dynamic';
     const modeLabel = isDynamic ? ' (动态)' : ' (静态)';
@@ -231,8 +231,8 @@ export class PromptTreeDataProvider
       }
       case 'git-diff': {
         const gitItem = item as GitDiffPromptItem;
-        const baseTooltip = gitItem.filePath 
-          ? `Git Diff: ${gitItem.filePath}` 
+        const baseTooltip = gitItem.filePath
+          ? `Git Diff: ${gitItem.filePath}`
           : '全局 Git Diff';
         return {
           iconPath: isDynamic

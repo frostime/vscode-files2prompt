@@ -1,10 +1,10 @@
 /*
  * Copyright (c) 2025 by frostime. All Rights Reserved.
  */
-import { 
-  PromptItem, 
-  FilePromptItem, 
-  SnippetPromptItem, 
+import {
+  PromptItem,
+  FilePromptItem,
+  SnippetPromptItem,
   SortOrder,
   PromptContent
 } from '../types';
@@ -84,12 +84,12 @@ export class PromptGenerator {
    */
   private async formatUserInstructions(items: PromptItem[]): Promise<string> {
     let result = '### User Instructions ###\n\n';
-    
+
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${content}\n\n`;
     }
-    
+
     return result;
   }
 
@@ -98,12 +98,12 @@ export class PromptGenerator {
    */
   private async formatTerminals(items: PromptItem[]): Promise<string> {
     let result = '### Terminal Output ###\n\n';
-    
+
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
     }
-    
+
     return result;
   }
 
@@ -112,12 +112,12 @@ export class PromptGenerator {
    */
   private async formatTrees(items: PromptItem[]): Promise<string> {
     let result = '### Folder Structure ###\n\n';
-    
+
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
     }
-    
+
     return result;
   }
 
@@ -126,12 +126,12 @@ export class PromptGenerator {
    */
   private async formatGitDiffs(items: PromptItem[]): Promise<string> {
     let result = '### Git Diff (--cached) ###\n\n';
-    
+
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`diff\n${content}\n\`\`\`\n\n`;
     }
-    
+
     return result;
   }
 

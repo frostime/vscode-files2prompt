@@ -12,7 +12,7 @@ import { PromptItem, ItemChangeEvent, ItemChangeEventType } from '../types';
  */
 export class PromptItemStore {
   private items: PromptItem[] = [];
-  
+
   private readonly _onDidChange = new vscode.EventEmitter<ItemChangeEvent>();
   readonly onDidChange = this._onDidChange.event;
 
