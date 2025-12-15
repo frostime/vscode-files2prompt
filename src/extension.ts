@@ -3,37 +3,50 @@
  * @Author       : frostime
  * @Date         : 2025-04-18 15:05:28
  * @FilePath     : /src/extension.ts
- * @LastEditTime : 2025-05-05 16:09:14
- * @Description  :
+ * @Description  : VS Code 扩展入口
  */
 import * as vscode from 'vscode';
-import { PromptManager } from './promptManager';
-import { PromptTreeProvider } from './promptTreeProvider';
-import { StatusBarController } from './statusBarController';
-import { registerCommands } from './commandHandler';
+import { PromptItemStore } from './core/PromptItemStore';
+import { PromptTreeDataProvider } from './ui/PromptTreeDataProvider';
+import { StatusBarController } from './ui/StatusBarController';
+import { CommandRegistry } from './commands/CommandRegistry';
 
-export function activate(context: vscode.ExtensionContext) {
-	// 创建 PromptManager 实例
-	const promptManager = new PromptManager();
+/**
+ * 扩展激活入口
+ * 
+ * 遵循依赖注入原则，在入口点组装所有依赖
+ */
+export function activate(context: vscode.ExtensionContext): void {
+  // 核心数据存储（单例）
+  const store = new PromptItemStore();
 
-	// 创建 TreeView
-	const promptTreeProvider = new PromptTreeProvider(promptManager);
-	const treeView = vscode.window.createTreeView('promptItemsView', {
-		treeDataProvider: promptTreeProvider,
-		dragAndDropController: promptTreeProvider,
-		showCollapseAll: true
-	});
+  // UI 组件
+  const treeDataProvider = new PromptTreeDataProvider(store);
+  const statusBarController = new StatusBarController(store);
 
-	// 创建状态栏控制器
-	const statusBarController = new StatusBarController(promptManager);
+  // 创建 TreeView
+  const treeView = vscode.window.createTreeView('promptItemsView', {
+    treeDataProvider,
+    dragAndDropController: treeDataProvider,
+    showCollapseAll: true
+  });
 
-	// 注册所有命令
-	registerCommands(context, promptManager, promptTreeProvider, statusBarController);
+  // 注册命令
+  const commandRegistry = new CommandRegistry(store);
+  commandRegistry.register(context);
 
-	context.subscriptions.push(
-		treeView,
-		statusBarController
-	);
+  // 注册需要释放的资源
+  context.subscriptions.push(
+    treeView,
+    statusBarController,
+    { dispose: () => store.dispose() },
+    { dispose: () => treeDataProvider.dispose() }
+  );
 }
 
-export function deactivate() { }
+/**
+ * 扩展停用入口
+ */
+export function deactivate(): void {
+  // 资源会通过 subscriptions 自动释放
+}
