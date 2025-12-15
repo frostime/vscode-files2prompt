@@ -7,6 +7,7 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { FilePromptItem, PromptItem } from '../types';
 import { BaseContentProvider, ProviderContext } from './IContentProvider';
+import { IgnoreService } from '../services/IgnoreService';
 
 /**
  * 文件内容提供者
@@ -15,9 +16,18 @@ import { BaseContentProvider, ProviderContext } from './IContentProvider';
  */
 export class FileProvider extends BaseContentProvider<FilePromptItem> {
   readonly type = 'file' as const;
+  private ignoreService: IgnoreService;
 
-  constructor(context: ProviderContext) {
+  constructor(context: ProviderContext, ignoreService?: IgnoreService) {
     super(context);
+    this.ignoreService = ignoreService ?? new IgnoreService();
+  }
+
+  /**
+   * 设置忽略服务（用于依赖注入）
+   */
+  setIgnoreService(service: IgnoreService): void {
+    this.ignoreService = service;
   }
 
   /**
@@ -73,9 +83,17 @@ export class FileProvider extends BaseContentProvider<FilePromptItem> {
         const entryUri = vscode.Uri.file(entryPath);
 
         if (entry.isDirectory()) {
+          // 检查目录是否应该被忽略
+          if (this.ignoreService.shouldIgnoreDirectory(entry.name)) {
+            continue;
+          }
           const subItems = await this.createFromDirectory(entryUri);
           items.push(...subItems);
         } else if (entry.isFile()) {
+          // 检查文件是否应该被忽略
+          if (this.ignoreService.shouldIgnoreFile(entry.name)) {
+            continue;
+          }
           try {
             const item = await this.create(entryUri);
             if (item) {

@@ -7,6 +7,9 @@ import { PromptItem, SnippetPromptItem, TerminalPromptItem, UserInstructionPromp
 import { PromptItemStore } from '../core/PromptItemStore';
 import { PromptGenerator } from '../services/PromptGenerator';
 import { PathService } from '../services/PathService';
+import { IgnoreService } from '../services/IgnoreService';
+import { FormatterService } from '../services/FormatterService';
+import { ExportService } from '../services/ExportService';
 import {
   FileProvider,
   SnippetProvider,
@@ -27,7 +30,10 @@ import { MultilineInputDialog } from '../ui/MultilineInputDialog';
  */
 export class CommandRegistry {
   private readonly pathService: PathService;
+  private readonly ignoreService: IgnoreService;
+  private readonly formatterService: FormatterService;
   private readonly promptGenerator: PromptGenerator;
+  private readonly exportService: ExportService;
 
   // 内容提供者
   private readonly fileProvider: FileProvider;
@@ -40,14 +46,18 @@ export class CommandRegistry {
   constructor(
     private readonly store: PromptItemStore
   ) {
+    // 初始化服务
     this.pathService = new PathService();
-    this.promptGenerator = new PromptGenerator();
+    this.ignoreService = new IgnoreService();
+    this.formatterService = new FormatterService();
+    this.promptGenerator = new PromptGenerator(this.formatterService);
+    this.exportService = new ExportService();
 
-    // 初始化提供者
-    this.fileProvider = new FileProvider(this.pathService);
+    // 初始化提供者（注入共享服务）
+    this.fileProvider = new FileProvider(this.pathService, this.ignoreService);
     this.snippetProvider = new SnippetProvider(this.pathService);
     this.terminalProvider = new TerminalProvider(this.pathService);
-    this.folderTreeProvider = new FolderTreeProvider(this.pathService);
+    this.folderTreeProvider = new FolderTreeProvider(this.pathService, this.ignoreService);
     this.gitDiffProvider = new GitDiffProvider(this.pathService);
     this.userInstructionProvider = new UserInstructionProvider(this.pathService);
   }
@@ -70,7 +80,9 @@ export class CommandRegistry {
       ['moveItemDown', this.moveItemDown.bind(this)],
       ['clearPromptItems', this.clearItems.bind(this)],
       ['generatePrompt', this.generatePrompt.bind(this)],
-      ['editStaticPromptItem', this.editStaticItem.bind(this)]
+      ['editStaticPromptItem', this.editStaticItem.bind(this)],
+      ['exportToZip', this.exportToZip.bind(this)],
+      ['reloadConfig', this.reloadConfig.bind(this)]
     ];
 
     for (const [name, handler] of commands) {
@@ -80,6 +92,15 @@ export class CommandRegistry {
       );
       context.subscriptions.push(disposable);
     }
+
+    // 监听配置变化
+    context.subscriptions.push(
+      vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('assembleCodeToPrompt')) {
+          this.reloadConfig();
+        }
+      })
+    );
   }
 
   /**
@@ -427,5 +448,22 @@ export class CommandRegistry {
    */
   private showPromptPanel(): void {
     vscode.commands.executeCommand('workbench.view.extension.prompt-explorer');
+  }
+
+  /**
+   * 导出为 ZIP 文件
+   */
+  private async exportToZip(): Promise<void> {
+    const items = this.store.getAll();
+    await this.exportService.exportToZip(items);
+  }
+
+  /**
+   * 重新加载配置
+   */
+  private reloadConfig(): void {
+    this.ignoreService.reload();
+    this.formatterService.reload();
+    vscode.window.setStatusBarMessage('配置已重新加载', 3000);
   }
 }

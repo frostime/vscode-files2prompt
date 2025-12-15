@@ -8,6 +8,7 @@ import {
   SortOrder,
   PromptContent
 } from '../types';
+import { FormatterService } from './FormatterService';
 
 /**
  * 代码项目的格式化信息
@@ -25,6 +26,18 @@ interface CodePromptInfo {
  * 遵循单一职责原则（SRP）
  */
 export class PromptGenerator {
+  private formatterService: FormatterService;
+
+  constructor(formatterService?: FormatterService) {
+    this.formatterService = formatterService ?? new FormatterService();
+  }
+
+  /**
+   * 设置格式化服务（用于依赖注入）
+   */
+  setFormatterService(service: FormatterService): void {
+    this.formatterService = service;
+  }
   /**
    * 生成完整的 Prompt
    */
@@ -83,7 +96,7 @@ export class PromptGenerator {
    * 格式化用户指令部分
    */
   private async formatUserInstructions(items: PromptItem[]): Promise<string> {
-    let result = '### User Instructions ###\n\n';
+    let result = '## User Instructions ##\n\n';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
@@ -97,7 +110,7 @@ export class PromptGenerator {
    * 格式化终端输出部分
    */
   private async formatTerminals(items: PromptItem[]): Promise<string> {
-    let result = '### Terminal Output ###\n\n';
+    let result = '## Terminal Output ##\n\n';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
@@ -111,7 +124,7 @@ export class PromptGenerator {
    * 格式化文件夹树部分
    */
   private async formatTrees(items: PromptItem[]): Promise<string> {
-    let result = '### Folder Structure ###\n\n';
+    let result = '## Folder Structure ##\n\n';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
@@ -125,7 +138,7 @@ export class PromptGenerator {
    * 格式化 Git Diff 部分
    */
   private async formatGitDiffs(items: PromptItem[]): Promise<string> {
-    let result = '### Git Diff (--cached) ###\n\n';
+    let result = '## Git Diff (--cached) ##\n\n';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
@@ -154,19 +167,21 @@ export class PromptGenerator {
     const outlines = codePrompts.map(p => `- ${p.path}`).join('\n');
     const contents = codePrompts.map(p => p.prompt).join('\n\n');
 
-    return `### Sources ###\n\nOutlines:\n\n${outlines}\n\nContent:\n\n${contents}\n\n`;
+    return `## Sources ##\n\nOutlines:\n\n${outlines}\n\nContent:\n\n${contents}\n\n`;
   }
 
   /**
    * 格式化单个代码项目
    */
   private formatCodeItem(item: PromptItem, content: string): CodePromptInfo {
+    // 使用格式化服务格式化内容
+    const formattedContent = this.formatterService.format(item, content);
+
     if (item.type === 'file') {
       const fileItem = item as FilePromptItem;
-      const wrapped = `<Content src="${fileItem.filePath}" lang="${fileItem.language}">\n${content}\n</Content>`;
       return {
         path: fileItem.filePath,
-        prompt: `文件: ${fileItem.filePath}\n${wrapped}`,
+        prompt: `文件: ${fileItem.filePath}\n${formattedContent}`,
         index: item.index
       };
     }
@@ -174,10 +189,9 @@ export class PromptGenerator {
     if (item.type === 'snippet') {
       const snippetItem = item as SnippetPromptItem;
       const location = `${snippetItem.filePath} (lines ${snippetItem.lineStart}-${snippetItem.lineEnd})`;
-      const wrapped = `<Content src="${location}" lang="${snippetItem.language}">\n${content}\n</Content>`;
       return {
         path: location,
-        prompt: `代码片段: ${location}\n${wrapped}`,
+        prompt: `代码片段: ${location}\n${formattedContent}`,
         index: item.index
       };
     }

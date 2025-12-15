@@ -7,15 +7,25 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { TreePromptItem } from '../types';
 import { BaseContentProvider, ProviderContext } from './IContentProvider';
+import { IgnoreService } from '../services/IgnoreService';
 
 /**
  * 文件夹树结构提供者
  */
 export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
   readonly type = 'tree' as const;
+  private ignoreService: IgnoreService;
 
-  constructor(context: ProviderContext) {
+  constructor(context: ProviderContext, ignoreService?: IgnoreService) {
     super(context);
+    this.ignoreService = ignoreService ?? new IgnoreService();
+  }
+
+  /**
+   * 设置忽略服务（用于依赖注入）
+   */
+  setIgnoreService(service: IgnoreService): void {
+    this.ignoreService = service;
   }
 
   /**
@@ -72,7 +82,16 @@ export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
 
     try {
       const entries = await fs.promises.readdir(folderPath, { withFileTypes: true });
-      const sortedEntries = this.sortEntries(entries);
+
+      // 过滤忽略的条目
+      const filteredEntries = entries.filter(entry => {
+        if (entry.isDirectory()) {
+          return !this.ignoreService.shouldIgnoreDirectory(entry.name);
+        }
+        return !this.ignoreService.shouldIgnoreFile(entry.name);
+      });
+
+      const sortedEntries = this.sortEntries(filteredEntries);
       const lastIndex = sortedEntries.length - 1;
 
       for (let i = 0; i < sortedEntries.length; i++) {

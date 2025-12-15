@@ -184,7 +184,8 @@ export class PromptTreeDataProvider
           description: '用户指令'
         };
       default:
-        return { label: '/', description: '' };
+        //@ts-ignore
+        return { label: item.title ?? '/', description: '' };
     }
   }
 

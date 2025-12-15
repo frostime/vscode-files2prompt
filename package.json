@@ -2,7 +2,7 @@
   "name": "assemble-code-to-prompt",
   "displayName": "Assemble LLM Prompt",
   "description": "快速将代码、终端输出和文件夹结构合并成一个 Prompt，方便你复制给 GPT",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "publisher": "frostime",
   "author": {
     "name": "frostime"
@@ -33,6 +33,115 @@
   "main": "./out/extension.js",
   "activationEvents": [],
   "contributes": {
+    "configuration": {
+      "title": "Assemble Code to Prompt",
+      "properties": {
+        "assembleCodeToPrompt.ignore.directories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".git",
+            ".svn",
+            ".hg",
+            "node_modules",
+            "__pycache__",
+            ".venv",
+            "venv",
+            ".env",
+            "dist",
+            "build",
+            ".next",
+            ".nuxt",
+            "coverage",
+            ".nyc_output",
+            ".cache",
+            ".parcel-cache",
+            ".turbo",
+            "out",
+            "target"
+          ],
+          "description": "添加文件夹时忽略的目录名（精确匹配）"
+        },
+        "assembleCodeToPrompt.ignore.files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".DS_Store",
+            "Thumbs.db",
+            ".gitignore",
+            ".gitattributes",
+            "package-lock.json",
+            "yarn.lock",
+            "pnpm-lock.yaml",
+            "composer.lock",
+            "Cargo.lock",
+            "Gemfile.lock",
+            "poetry.lock"
+          ],
+          "description": "添加文件夹时忽略的文件名（精确匹配）"
+        },
+        "assembleCodeToPrompt.ignore.extensions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            ".pyc",
+            ".pyo",
+            ".pyd",
+            ".so",
+            ".dll",
+            ".dylib",
+            ".class",
+            ".o",
+            ".obj",
+            ".exe",
+            ".bin",
+            ".map",
+            ".min.js",
+            ".min.css"
+          ],
+          "description": "添加文件夹时忽略的文件扩展名"
+        },
+        "assembleCodeToPrompt.ignore.patterns": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "description": "添加文件夹时忽略的 glob 模式（如 *.log, temp_*）"
+        },
+        "assembleCodeToPrompt.format.preset": {
+          "type": "string",
+          "enum": [
+            "xml",
+            "markdown",
+            "plain",
+            "github",
+            "custom"
+          ],
+          "enumDescriptions": [
+            "<Content src=\"...\" lang=\"...\">...</Content>",
+            "Markdown 代码块 ```lang...```",
+            "纯文本，无包装",
+            "GitHub 风格，带文件路径注释",
+            "使用自定义 JavaScript 函数"
+          ],
+          "default": "xml",
+          "description": "代码内容的格式化预设"
+        },
+        "assembleCodeToPrompt.format.customScript": {
+          "type": "string",
+          "default": "",
+          "editPresentation": "multilineText",
+          "description": "自定义格式化 JavaScript 函数。需要定义一个 format 函数，接收 ctx 参数（包含 filePath, language, content, type, lineStart, lineEnd），返回格式化后的字符串。\n\n示例:\nfunction format(ctx) {\n  return `// File: ${ctx.filePath}\\n${ctx.content}`;\n}"
+        }
+      }
+    },
     "commands": [
       {
         "command": "assemble-code-to-prompt.addFileToPrompt",
@@ -117,6 +226,18 @@
         "title": "生成 Prompt",
         "category": "Prompt",
         "icon": "$(play)"
+      },
+      {
+        "command": "assemble-code-to-prompt.exportToZip",
+        "title": "导出为 ZIP",
+        "category": "Prompt",
+        "icon": "$(package)"
+      },
+      {
+        "command": "assemble-code-to-prompt.reloadConfig",
+        "title": "重新加载配置",
+        "category": "Prompt",
+        "icon": "$(refresh)"
       }
     ],
     "submenus": [
@@ -172,7 +293,13 @@
           "command": "assemble-code-to-prompt.generatePrompt"
         },
         {
+          "command": "assemble-code-to-prompt.exportToZip"
+        },
+        {
           "command": "assemble-code-to-prompt.clearPromptItems"
+        },
+        {
+          "command": "assemble-code-to-prompt.reloadConfig"
         },
         {
           "command": "assemble-code-to-prompt.addFileToPrompt",
@@ -255,14 +382,19 @@
           "group": "navigation@1"
         },
         {
-          "command": "assemble-code-to-prompt.clearPromptItems",
+          "command": "assemble-code-to-prompt.exportToZip",
           "when": "view == promptItemsView",
           "group": "navigation@2"
         },
         {
-          "submenu": "assemble-code-to-prompt.addToPromptSubmenu",
+          "command": "assemble-code-to-prompt.clearPromptItems",
           "when": "view == promptItemsView",
           "group": "navigation@3"
+        },
+        {
+          "submenu": "assemble-code-to-prompt.addToPromptSubmenu",
+          "when": "view == promptItemsView",
+          "group": "navigation@4"
         }
       ],
       "view/item/context": [
