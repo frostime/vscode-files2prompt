@@ -3,6 +3,15 @@
 src/**
 .gitignore
 .yarnrc
+.npmrc
+.sspec/**
+.claude/**
+.github/**
+logs/**
+tmp/**
+AGENTS.md
+*.vsix
+yarn.lock
 vsc-extension-quickstart.md
 **/tsconfig.json
 **/eslint.config.mjs
