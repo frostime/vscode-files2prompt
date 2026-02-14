@@ -1,0 +1,9 @@
+!project.md
+!spec-docs/**
+!commands/**
+!.meta.json
+changes/**
+requests/**
+skills/**
+asks/**
+tmp/**
