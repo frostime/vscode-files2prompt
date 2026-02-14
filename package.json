@@ -2,7 +2,7 @@
   "name": "assemble-code-to-prompt",
   "displayName": "Assemble LLM Prompt",
   "description": "快速将代码、终端输出和文件夹结构合并成一个 Prompt，方便你复制给 GPT",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "publisher": "frostime",
   "author": {
     "name": "frostime"

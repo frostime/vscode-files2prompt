@@ -68,7 +68,8 @@ export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
    */
   private createDynamicTreeGenerator(uri: vscode.Uri): () => Promise<string> {
     return async () => {
-      return this.generateFolderTree(uri, '');
+      const folderName = path.basename(uri.fsPath);
+      return `${folderName}/\n` + await this.generateFolderTree(uri, '');
     };
   }
 
@@ -77,8 +78,7 @@ export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
    */
   async generateFolderTree(uri: vscode.Uri, prefix: string): Promise<string> {
     const folderPath = uri.fsPath;
-    const folderName = path.basename(folderPath);
-    let result = prefix ? `${prefix}${folderName}/\n` : `${folderName}/\n`;
+    let result = '';
 
     try {
       const entries = await fs.promises.readdir(folderPath, { withFileTypes: true });
@@ -101,11 +101,11 @@ export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
         const entryUri = vscode.Uri.file(entryPath);
 
         const currentPrefix = prefix + (isLast ? '└── ' : '├── ');
-        const childPrefix = prefix + (isLast ? '    ' : '│   ');
 
         if (entry.isDirectory()) {
-          const subTree = await this.generateFolderTree(entryUri, childPrefix);
-          result += currentPrefix + subTree;
+          result += `${currentPrefix}${entry.name}/\n`;
+          const childPrefix = prefix + (isLast ? '    ' : '│   ');
+          result += await this.generateFolderTree(entryUri, childPrefix);
         } else {
           result += `${currentPrefix}${entry.name}\n`;
         }
