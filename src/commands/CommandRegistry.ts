@@ -218,8 +218,6 @@ export class CommandRegistry {
     if (item && !this.snippetProvider.isDuplicate(item, this.store.getAll())) {
       this.store.add(item);
     }
-
-    this.showPromptPanel();
   }
 
   /**

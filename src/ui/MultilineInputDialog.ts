@@ -14,11 +14,12 @@ export interface MultilineInputOptions {
   maxLength?: number;
   submitButtonText?: string;
   cancelButtonText?: string;
+  allowEmpty?: boolean;
 }
 
 /**
  * 多行文本输入对话框
- * 
+ *
  * 使用 Webview 创建支持多行文本输入的对话框
  */
 export class MultilineInputDialog {
@@ -34,7 +35,8 @@ export class MultilineInputDialog {
       initialValue: options.initialValue ?? '',
       maxLength: options.maxLength ?? 5000,
       submitButtonText: options.submitButtonText ?? '确定',
-      cancelButtonText: options.cancelButtonText ?? '取消'
+      cancelButtonText: options.cancelButtonText ?? '取消',
+      allowEmpty: options.allowEmpty ?? false
     };
 
     return new Promise((resolve) => {
@@ -169,8 +171,8 @@ export class MultilineInputDialog {
   <div class="container">
     <h2>${this.escapeHtml(config.title)}</h2>
     <div class="description">${escapedDescription}</div>
-    <textarea 
-      id="inputText" 
+    <textarea
+      id="inputText"
       placeholder="${escapedPlaceholder}"
       autofocus
     >${escapedInitialValue}</textarea>
@@ -189,24 +191,25 @@ export class MultilineInputDialog {
     const charCount = document.getElementById('charCount');
     const submitBtn = document.getElementById('submitBtn');
     const maxLength = ${config.maxLength};
+    const allowEmpty = ${config.allowEmpty ? 'true' : 'false'};
 
     function updateUI() {
       const count = textarea.value.length;
       charCount.textContent = count;
-      
+
       const isOverLimit = count > maxLength;
       const isEmpty = textarea.value.trim().length === 0;
-      
+
       charCount.className = isOverLimit ? 'char-count error' : 'char-count';
-      submitBtn.disabled = isOverLimit || isEmpty;
+      submitBtn.disabled = isOverLimit || (!allowEmpty && isEmpty);
     }
 
     textarea.addEventListener('input', updateUI);
     updateUI();
 
     function submit() {
-      const text = textarea.value.trim();
-      if (!text) return;
+      const text = textarea.value;
+      if (!allowEmpty && !text.trim()) return;
       if (text.length > maxLength) {
         alert(\`内容过长，请控制在\${maxLength}字符以内\`);
         return;

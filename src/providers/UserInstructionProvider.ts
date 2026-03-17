@@ -20,36 +20,37 @@ export class UserInstructionProvider
     super(context);
   }
 
+  private normalizeContent(content: string): string {
+    return content.trim().length === 0 ? '' : content;
+  }
+
   /**
    * 创建用户指令项目
    */
   async create(): Promise<UserInstructionPromptItem | undefined> {
     const instruction = await MultilineInputDialog.show({
       title: '添加用户指令',
-      description: '请输入您的用户指令。支持多行文本，可以包含复杂的要求和说明。',
+      description: '请输入您的用户指令。支持多行文本，可以包含复杂的要求和说明，也可以留空作为占位项。',
       placeholder: '例如：请帮我分析这段代码的性能问题，并给出优化建议...',
       maxLength: 5000,
       submitButtonText: '添加',
-      cancelButtonText: '取消'
+      cancelButtonText: '取消',
+      allowEmpty: true
     });
 
-    if (!instruction) {
+    if (instruction === undefined) {
       return undefined;
     }
 
-    const trimmed = instruction.trim();
-    if (!trimmed) {
-      this.showWarning('用户指令不能为空');
-      return undefined;
-    }
+    const normalizedContent = this.normalizeContent(instruction);
 
-    const title = this.generateTitle(trimmed);
+    const title = this.generateTitle(normalizedContent);
 
     const item: UserInstructionPromptItem = {
       id: uuidv4(),
       type: 'user-instruction',
       title,
-      content: trimmed,
+      content: normalizedContent,
       index: 0,
       mode: 'static'
     };
@@ -73,15 +74,16 @@ export class UserInstructionProvider
       initialValue: currentContent,
       maxLength: 5000,
       submitButtonText: '保存',
-      cancelButtonText: '取消'
+      cancelButtonText: '取消',
+      allowEmpty: true
     });
 
     if (newContent !== undefined && newContent !== currentContent) {
-      const trimmed = newContent.trim();
+      const normalizedContent = this.normalizeContent(newContent);
       return {
         ...item,
-        content: trimmed,
-        title: this.generateTitle(trimmed)
+        content: normalizedContent,
+        title: this.generateTitle(normalizedContent)
       };
     }
 
@@ -92,6 +94,10 @@ export class UserInstructionProvider
    * 检查用户指令是否重复
    */
   isDuplicate(item: Partial<UserInstructionPromptItem>, existingItems: PromptItem[]): boolean {
+    if (typeof item.content !== 'string' || item.content.length === 0) {
+      return false;
+    }
+
     return existingItems.some(
       existing => 
         existing.type === 'user-instruction' && 

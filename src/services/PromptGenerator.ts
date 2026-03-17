@@ -21,12 +21,13 @@ interface CodePromptInfo {
 
 /**
  * Prompt 生成服务
- * 
+ *
  * 职责：将 PromptItem 集合转换为格式化的 Prompt 文本
  * 遵循单一职责原则（SRP）
  */
 export class PromptGenerator {
   private formatterService: FormatterService;
+  private static readonly SECTION_DIVIDER = '='.repeat(16);
 
   constructor(formatterService?: FormatterService) {
     this.formatterService = formatterService ?? new FormatterService();
@@ -51,29 +52,29 @@ export class PromptGenerator {
     // 按类型分组
     const grouped = this.groupItemsByType(items);
 
-    // 1. 用户指令（始终在最上方）
-    if (grouped.userInstructions.length > 0) {
-      sections.push(await this.formatUserInstructions(grouped.userInstructions));
-    }
-
-    // 2. 终端输出
+    // 1. 终端输出
     if (grouped.terminals.length > 0) {
       sections.push(await this.formatTerminals(grouped.terminals));
     }
 
-    // 3. 文件夹结构
+    // 2. 文件夹结构
     if (grouped.trees.length > 0) {
       sections.push(await this.formatTrees(grouped.trees));
     }
 
-    // 4. Git Diff
+    // 3. Git Diff
     if (grouped.gitDiffs.length > 0) {
       sections.push(await this.formatGitDiffs(grouped.gitDiffs));
     }
 
-    // 5. 代码文件和片段
+    // 4. 代码文件和片段
     if (grouped.codeItems.length > 0) {
       sections.push(await this.formatCodeItems(grouped.codeItems, sortOrder));
+    }
+
+    // 5. 用户指令放在末尾，作为最后的补充说明
+    if (grouped.userInstructions.length > 0) {
+      sections.push(await this.formatUserInstructions(grouped.userInstructions));
     }
 
     return sections.join('').trim();
@@ -96,56 +97,56 @@ export class PromptGenerator {
    * 格式化用户指令部分
    */
   private async formatUserInstructions(items: PromptItem[]): Promise<string> {
-    let result = '## User Instructions ##\n\n';
+    let result = '';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${content}\n\n`;
     }
 
-    return result;
+    return this.wrapSection('USER INSTRUCTIONS', result);
   }
 
   /**
    * 格式化终端输出部分
    */
   private async formatTerminals(items: PromptItem[]): Promise<string> {
-    let result = '## Terminal Output ##\n\n';
+    let result = '';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
     }
 
-    return result;
+    return this.wrapSection('TERMINAL OUTPUT', result);
   }
 
   /**
    * 格式化文件夹树部分
    */
   private async formatTrees(items: PromptItem[]): Promise<string> {
-    let result = '## Folder Structure ##\n\n';
+    let result = '';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`\n${content}\n\`\`\`\n\n`;
     }
 
-    return result;
+    return this.wrapSection('FOLDER STRUCTURE', result);
   }
 
   /**
    * 格式化 Git Diff 部分
    */
   private async formatGitDiffs(items: PromptItem[]): Promise<string> {
-    let result = '## Git Diff (--cached) ##\n\n';
+    let result = '';
 
     for (const item of items) {
       const content = await this.resolveContent(item.content);
       result += `${item.title}\n\`\`\`diff\n${content}\n\`\`\`\n\n`;
     }
 
-    return result;
+    return this.wrapSection('GIT DIFF (--cached)', result);
   }
 
   /**
@@ -167,7 +168,10 @@ export class PromptGenerator {
     const outlines = codePrompts.map(p => `- ${p.path}`).join('\n');
     const contents = codePrompts.map(p => p.prompt).join('\n\n');
 
-    return `## Sources ##\n\nOutlines:\n\n${outlines}\n\nContent:\n\n${contents}\n\n`;
+    return this.wrapSection(
+      'SOURCES',
+      `Outlines:\n\n${outlines}\n\nContent:\n\n${contents}\n\n`
+    );
   }
 
   /**
@@ -212,6 +216,12 @@ export class PromptGenerator {
 
     const location = `${item.filePath} (lines ${item.lineStart}-${item.lineEnd})`;
     return `代码片段: ${location}\n${formattedContent}`;
+  }
+
+  private wrapSection(title: string, content: string): string {
+    const body = content.trim();
+    const divider = PromptGenerator.SECTION_DIVIDER;
+    return `${divider} BEGIN ${title} ${divider}\n\n${body}\n\n${divider} END ${title} ${divider}\n\n`;
   }
 
   /**
