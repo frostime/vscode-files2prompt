@@ -1,9 +1,5 @@
-!project.md
-!spec-docs/**
-!commands/**
-!.meta.json
-changes/**
-requests/**
-skills/**
-asks/**
-tmp/**
+requests/archive
+changes/archive
+asks/archive
+tmp/*
+*.pyc

@@ -5,4 +5,5 @@ export * from './PathService';
 export * from './PromptGenerator';
 export * from './IgnoreService';
 export * from './FormatterService';
+export * from './FormatPresetMigrationService';
 export * from './ExportService';

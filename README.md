@@ -63,17 +63,17 @@
 ### 格式化方案
 
 ```jsonc
-// 预设: xml | markdown | plain | github | custom
+// 预设: xml | markdown | custom
 "assembleCodeToPrompt.format.preset": "xml"
 ```
 
 | 预设 | 输出 |
 |------|------|
 | `xml` | `<Content src="path" lang="ts">code</Content>` |
-| `markdown` | ` ```ts\ncode\n``` ` |
-| `plain` | 纯代码，无包装 |
-| `github` | `<!-- filepath: path -->\n```ts\ncode\n``` ` |
+| `markdown` | `<!-- filepath: path -->` + 四反引号代码块 |
 | `custom` | 自定义函数 |
+
+升级说明：旧的 `plain` / `github` 设置会在扩展激活时自动迁移到 `markdown`，并继续保持兼容输出。
 
 **自定义格式化**：
 

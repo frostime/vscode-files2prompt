@@ -176,12 +176,15 @@ export class PromptGenerator {
   private formatCodeItem(item: PromptItem, content: string): CodePromptInfo {
     // 使用格式化服务格式化内容
     const formattedContent = this.formatterService.format(item, content);
+    const useRawMarkdownPrompt = this.formatterService.getPreset() === 'markdown';
 
     if (item.type === 'file') {
       const fileItem = item as FilePromptItem;
       return {
         path: fileItem.filePath,
-        prompt: `文件: ${fileItem.filePath}\n${formattedContent}`,
+        prompt: useRawMarkdownPrompt
+          ? formattedContent
+          : this.wrapCodePrompt(fileItem, formattedContent),
         index: item.index
       };
     }
@@ -191,13 +194,24 @@ export class PromptGenerator {
       const location = `${snippetItem.filePath} (lines ${snippetItem.lineStart}-${snippetItem.lineEnd})`;
       return {
         path: location,
-        prompt: `代码片段: ${location}\n${formattedContent}`,
+        prompt: useRawMarkdownPrompt
+          ? formattedContent
+          : this.wrapCodePrompt(snippetItem, formattedContent),
         index: item.index
       };
     }
 
     // 不应该到达这里
     return { path: '', prompt: '', index: 0 };
+  }
+
+  private wrapCodePrompt(item: FilePromptItem | SnippetPromptItem, formattedContent: string): string {
+    if (item.type === 'file') {
+      return `文件: ${item.filePath}\n${formattedContent}`;
+    }
+
+    const location = `${item.filePath} (lines ${item.lineStart}-${item.lineEnd})`;
+    return `代码片段: ${location}\n${formattedContent}`;
   }
 
   /**

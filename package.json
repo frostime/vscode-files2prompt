@@ -117,22 +117,19 @@
         },
         "assembleCodeToPrompt.format.preset": {
           "type": "string",
+          "scope": "window",
           "enum": [
             "xml",
             "markdown",
-            "plain",
-            "github",
             "custom"
           ],
           "enumDescriptions": [
             "<Content src=\"...\" lang=\"...\">...</Content>",
-            "Markdown 代码块 ```lang...```",
-            "纯文本，无包装",
-            "GitHub 风格，带文件路径注释",
+            "带 filepath 注释的 Markdown 代码块 <!-- filepath: ... -->\\n````lang...````",
             "使用自定义 JavaScript 函数"
           ],
           "default": "xml",
-          "description": "代码内容的格式化预设"
+          "description": "代码内容的格式化预设。旧的 plain / github 会在升级后自动迁移到 markdown"
         },
         "assembleCodeToPrompt.format.customScript": {
           "type": "string",

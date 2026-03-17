@@ -10,13 +10,20 @@ import { PromptItemStore } from './core/PromptItemStore';
 import { PromptTreeDataProvider } from './ui/PromptTreeDataProvider';
 import { StatusBarController } from './ui/StatusBarController';
 import { CommandRegistry } from './commands/CommandRegistry';
+import { migrateLegacyFormatPreset } from './services';
 
 /**
  * 扩展激活入口
  * 
  * 遵循依赖注入原则，在入口点组装所有依赖
  */
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  try {
+    await migrateLegacyFormatPreset();
+  } catch (error) {
+    console.warn('迁移旧的格式预设设置失败:', error);
+  }
+
   // 核心数据存储（单例）
   const store = new PromptItemStore();
 

@@ -8,12 +8,33 @@ import { FilePromptItem, SnippetPromptItem, PromptItem } from '../types';
 /**
  * 预设格式化模板类型
  */
-export type FormatPreset =
+export type ActiveFormatPreset =
   | 'xml'           // <Content src="..." lang="...">...</Content>
   | 'markdown'      // ```lang\n...\n``` with header
-  | 'plain'         // 纯文本，无包装
-  | 'github'        // GitHub 风格，带文件路径注释
   | 'custom';       // 自定义 JS 函数
+
+export type LegacyFormatPreset =
+  | 'plain'         // 纯文本，无包装
+  | 'github';       // GitHub 风格，带文件路径注释
+
+export type FormatPreset = ActiveFormatPreset | LegacyFormatPreset;
+
+const LEGACY_PRESET_MAP: Record<LegacyFormatPreset, ActiveFormatPreset> = {
+  plain: 'markdown',
+  github: 'markdown'
+};
+
+function normalizeFormatPreset(preset: FormatPreset | undefined): ActiveFormatPreset {
+  if (!preset) {
+    return 'xml';
+  }
+
+  if (preset === 'plain' || preset === 'github') {
+    return LEGACY_PRESET_MAP[preset];
+  }
+
+  return preset;
+}
 
 /**
  * 格式化上下文，传递给自定义格式化函数
@@ -42,7 +63,7 @@ export type CustomFormatter = (ctx: FormatContext) => string;
  * 格式化配置
  */
 export interface FormatterConfig {
-  preset: FormatPreset;
+  preset: ActiveFormatPreset;
   customScript?: string;
 }
 
@@ -67,7 +88,7 @@ export class FormatterService {
     const vsConfig = vscode.workspace.getConfiguration('assembleCodeToPrompt');
 
     return {
-      preset: vsConfig.get<FormatPreset>('format.preset') ?? 'xml',
+      preset: normalizeFormatPreset(vsConfig.get<FormatPreset>('format.preset')),
       customScript: vsConfig.get<string>('format.customScript')
     };
   }
@@ -140,10 +161,6 @@ export class FormatterService {
         return this.formatXml(ctx);
       case 'markdown':
         return this.formatMarkdown(ctx);
-      case 'plain':
-        return this.formatPlain(ctx);
-      case 'github':
-        return this.formatGitHub(ctx);
       case 'custom':
         return this.formatCustom(ctx);
       default:
@@ -195,36 +212,18 @@ export class FormatterService {
 
   /**
    * Markdown 格式
-   * ```language
+   * <!-- filepath: path -->
+   * ````language
    * content
-   * ```
+   * ````
    */
   private formatMarkdown(ctx: FormatContext): string {
-    const lang = ctx.language || 'text';
-    return `\`\`\`${lang}\n${ctx.content}\n\`\`\``;
-  }
-
-  /**
-   * 纯文本格式
-   */
-  private formatPlain(ctx: FormatContext): string {
-    return ctx.content;
-  }
-
-  /**
-   * GitHub 风格
-   * <!-- filepath: path -->
-   * ```language
-   * content
-   * ```
-   */
-  private formatGitHub(ctx: FormatContext): string {
     const lang = ctx.language || 'text';
     const filepath = ctx.type === 'snippet'
       ? `${ctx.filePath}#L${ctx.lineStart}-L${ctx.lineEnd}`
       : ctx.filePath;
 
-    return `<!-- filepath: ${filepath} -->\n\`\`\`${lang}\n${ctx.content}\n\`\`\``;
+    return `<!-- filepath: ${filepath} -->\n\`\`\`\`${lang}\n${ctx.content}\n\`\`\`\``;
   }
 
   /**
@@ -253,14 +252,14 @@ export class FormatterService {
   /**
    * 获取当前预设
    */
-  getPreset(): FormatPreset {
+  getPreset(): ActiveFormatPreset {
     return this.config.preset;
   }
 
   /**
    * 获取所有可用预设
    */
-  static getAvailablePresets(): Array<{ id: FormatPreset; label: string; description: string }> {
+  static getAvailablePresets(): Array<{ id: ActiveFormatPreset; label: string; description: string }> {
     return [
       {
         id: 'xml',
@@ -270,17 +269,7 @@ export class FormatterService {
       {
         id: 'markdown',
         label: 'Markdown 代码块',
-        description: '```lang\\n...\\n```'
-      },
-      {
-        id: 'plain',
-        label: '纯文本',
-        description: '无包装，仅内容'
-      },
-      {
-        id: 'github',
-        label: 'GitHub 风格',
-        description: '带文件路径注释的代码块'
+        description: '<!-- filepath: path -->\\n````lang\\n...\\n````'
       },
       {
         id: 'custom',
