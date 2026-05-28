@@ -1,12 +1,11 @@
 ---
 name: side-select-subset
-created: 2026-05-27T17:41:16
-status: OPEN
+created: 2026-05-27 17:41:16
+status: DOING
 kind: directive
-attach-change: null
-tldr: ""
+attach-change: .sspec/changes/26-05-27T22-52_side-select-subset/spec.md
+tldr: ''
 ---
-
 <!-- MUST follow frontmatter schema:
 status: OPEN | DOING | DONE | CLOSED
 tldr: One-sentence summary for list views — fill this! -->

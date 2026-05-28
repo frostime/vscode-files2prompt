@@ -40,7 +40,8 @@ export class SnippetProvider extends BaseContentProvider<SnippetPromptItem> {
         lineStart,
         lineEnd,
         index: 0,
-        mode: 'static'
+        mode: 'static',
+        selected: true
       };
 
       this.showStatusMessage(`已添加代码片段: ${relativePath} (${lineStart}-${lineEnd})`);

@@ -51,7 +51,8 @@ export class FolderTreeProvider extends BaseContentProvider<TreePromptItem> {
         content: this.createDynamicTreeGenerator(uri),
         filePath: relativePath,
         index: 0,
-        mode: 'dynamic'
+        mode: 'dynamic',
+        selected: true
       };
 
       this.showStatusMessage(`已添加文件夹树结构: ${folderName}`);

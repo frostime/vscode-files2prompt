@@ -52,7 +52,8 @@ export class UserInstructionProvider
       title,
       content: normalizedContent,
       index: 0,
-      mode: 'static'
+      mode: 'static',
+      selected: true
     };
 
     this.showStatusMessage('已添加用户指令');

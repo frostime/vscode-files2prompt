@@ -21,8 +21,26 @@ export class PromptItemStore {
    */
   add(item: PromptItem): void {
     item.index = this.items.length;
+    item.selected ??= true;
     this.items.push(item);
     this._onDidChange.fire({ type: 'add', item });
+  }
+
+  /**
+   * 设置单个 item 的选中状态
+   */
+  setSelected(id: string, selected: boolean): boolean {
+    return this.update(id, { selected } as Partial<PromptItem>);
+  }
+
+  /**
+   * 批量设置所有 item 的选中状态
+   */
+  selectAll(selected: boolean): void {
+    for (const item of this.items) {
+      item.selected = selected;
+    }
+    this._onDidChange.fire({ type: 'update', items: [...this.items] });
   }
 
   /**

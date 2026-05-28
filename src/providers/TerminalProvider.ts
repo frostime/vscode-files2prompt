@@ -43,7 +43,8 @@ export class TerminalProvider
       title: `Terminal: ${terminalName}`,
       content: output,
       index: 0,
-      mode: 'static'
+      mode: 'static',
+      selected: true
     };
 
     this.showStatusMessage(`已添加终端输出: ${terminalName}`);
