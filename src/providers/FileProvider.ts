@@ -55,7 +55,8 @@ export class FileProvider extends BaseContentProvider<FilePromptItem> {
         filePath: relativePath,
         language: document.languageId,
         index: 0, // 由 Store 设置
-        mode: 'dynamic'
+        mode: 'dynamic',
+        selected: true
       };
 
       this.showStatusMessage(`已添加文件: ${fileName}`);

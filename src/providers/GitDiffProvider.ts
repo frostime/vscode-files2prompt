@@ -74,7 +74,8 @@ export class GitDiffProvider extends BaseContentProvider<GitDiffPromptItem> {
       content: this.createDynamicGitDiffGenerator(uri),
       filePath: relativePath,
       index: 0,
-      mode: 'dynamic'
+      mode: 'dynamic',
+      selected: true
     };
 
     const message = uri 

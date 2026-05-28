@@ -82,7 +82,9 @@ export class CommandRegistry {
       ['generatePrompt', this.generatePrompt.bind(this)],
       ['editStaticPromptItem', this.editStaticItem.bind(this)],
       ['exportToZip', this.exportToZip.bind(this)],
-      ['reloadConfig', this.reloadConfig.bind(this)]
+      ['reloadConfig', this.reloadConfig.bind(this)],
+      ['selectAllItems', this.selectAllItems.bind(this)],
+      ['deselectAllItems', this.deselectAllItems.bind(this)]
     ];
 
     for (const [name, handler] of commands) {
@@ -333,7 +335,11 @@ export class CommandRegistry {
    * 生成 Prompt
    */
   private async generatePrompt(): Promise<void> {
-    const items = this.store.getAll();
+    const items = this.store.getAll().filter(i => i.selected);
+    if (items.length === 0) {
+      vscode.window.showWarningMessage('没有选中任何项目，请先勾选要使用的项目');
+      return;
+    }
     const prompt = await this.promptGenerator.generate(items, 'openingOrder');
 
     const document = await vscode.workspace.openTextDocument({
@@ -452,8 +458,26 @@ export class CommandRegistry {
    * 导出为 ZIP 文件
    */
   private async exportToZip(): Promise<void> {
-    const items = this.store.getAll();
+    const items = this.store.getAll().filter(i => i.selected);
+    if (items.length === 0) {
+      vscode.window.showWarningMessage('没有选中任何项目，请先勾选要使用的项目');
+      return;
+    }
     await this.exportService.exportToZip(items);
+  }
+
+  /**
+   * 全选
+   */
+  private selectAllItems(): void {
+    this.store.selectAll(true);
+  }
+
+  /**
+   * 取消全选
+   */
+  private deselectAllItems(): void {
+    this.store.selectAll(false);
   }
 
   /**

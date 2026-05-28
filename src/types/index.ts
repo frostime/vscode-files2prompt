@@ -38,6 +38,7 @@ export interface PromptItemBase {
   content: PromptContent;
   mode: ContentMode;
   index: number;
+  selected: boolean;
 }
 
 /**

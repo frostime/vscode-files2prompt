@@ -109,6 +109,11 @@ export class PromptTreeDataProvider
     // 设置上下文值（用于菜单 when 条件）
     treeItem.contextValue = `promptItem-${element.item.type}-${element.item.mode}`;
 
+    // 设置 checkbox 状态
+    treeItem.checkboxState = element.item.selected
+      ? vscode.TreeItemCheckboxState.Checked
+      : vscode.TreeItemCheckboxState.Unchecked;
+
     return treeItem;
   }
 

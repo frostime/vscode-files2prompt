@@ -38,6 +38,15 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     showCollapseAll: true
   });
 
+  // 监听 checkbox 状态变化
+  context.subscriptions.push(
+    treeView.onDidChangeCheckboxState(e => {
+      for (const [node, state] of e.items) {
+        store.setSelected(node.id, state === vscode.TreeItemCheckboxState.Checked);
+      }
+    })
+  );
+
   // 注册命令
   const commandRegistry = new CommandRegistry(store);
   commandRegistry.register(context);
